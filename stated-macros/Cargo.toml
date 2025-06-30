@@ -1,0 +1,21 @@
+[package]
+name = "stated-macros"
+version = "0.1.0"
+edition = "2024"
+authors = ["Michael Ni <michael.ni678@gmail.com>"]
+repository = "https://github.com/michaelni678/stated"
+homepage = "https://github.com/michaelni678/stated"
+readme = "README.md"
+license = "Apache-2.0"
+keywords = ["typestate"]
+description = "Procedural macros for Stated"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+extend = "1.2.0"
+itertools = "0.14.0"
+proc-macro2 = "1"
+quote = "1"
+syn = { version = "2", features = ["full", "visit-mut"] }
