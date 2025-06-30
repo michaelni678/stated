@@ -8,7 +8,7 @@ homepage = "https://github.com/michaelni678/stated"
 readme = "README.md"
 license = "Apache-2.0"
 keywords = ["typestate"]
-description = "Typestate pattern, made easy"
+description = "Typestate pattern, made simple"
 documentation = "https://docs.rs/stated"
 
 [dependencies]
