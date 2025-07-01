@@ -1,7 +1,7 @@
 use proc_macro2::TokenStream as TokenStream2;
 use syn::{
-    Error, Ident, ItemImpl, ItemStruct, Meta, Result, Token, punctuated::Punctuated,
-    spanned::Spanned,
+    Error, Ident, ItemImpl, ItemStruct, Meta, Result, Token, Type, TypePath,
+    punctuated::Punctuated, spanned::Spanned,
 };
 
 use crate::{
@@ -13,6 +13,7 @@ pub fn expand_item_struct(
     mut metas: Punctuated<Meta, Token![,]>,
     item_struct: ItemStruct,
 ) -> Result<TokenStream2> {
+    // Extract all export names.
     let mut exports = metas
         .call(|metas| {
             metas
@@ -25,10 +26,12 @@ pub fn expand_item_struct(
         })?
         .into_iter();
 
+    // Get the first export name, or default to the struct name.
     let export = exports
         .next()
         .unwrap_or(parse_squote!(#{item_struct.ident}));
 
+    // Validate that only one export name was specified.
     if let Some(export) = exports.next() {
         return Err(Error::new(
             export.span(),
@@ -42,8 +45,9 @@ pub fn expand_item_struct(
 
         #[macro_export]
         #[doc(hidden)]
-        macro_rules! #{export}! {
+        macro_rules! #{export} {
             ($($tt:tt)*) => {
+                // Emit the input, but with the metas attached.
                 #[::stated::stated_internal(#metas)]
                 $($tt)*
             }
@@ -52,8 +56,47 @@ pub fn expand_item_struct(
 }
 
 pub fn expand_item_impl(
-    metas: Punctuated<Meta, Token![,]>,
+    mut metas: Punctuated<Meta, Token![,]>,
     item_impl: ItemImpl,
 ) -> Result<TokenStream2> {
-    Ok(squote! {})
+    // Extract all the import names.
+    let mut imports = metas
+        .call(|metas| {
+            metas
+                .extract_if(.., |meta| meta.path().is_ident("import"))
+                .map(|meta| match meta {
+                    Meta::NameValue(name_value) => Ok(parse_squote!(#{name_value.value})),
+                    other => Err(Error::new(other.span(), "import name format is incorrect")),
+                })
+                .collect::<Result<Vec<Ident>>>()
+        })?
+        .into_iter();
+
+    // Get the first import name, or default to the impl type name.
+    let import = match imports.next() {
+        Some(import) => import,
+        None => {
+            let Type::Path(TypePath { path, .. }) = item_impl.self_ty.as_ref() else {
+                return Err(Error::new(item_impl.self_ty.span(), "expected a path"));
+            };
+
+            path.segments
+                .last()
+                .ok_or_else(|| Error::new(path.span(), "path is invalid"))?
+                .ident
+                .clone()
+        }
+    };
+
+    // Validate that only one import name was specified.
+    if let Some(import) = imports.next() {
+        return Err(Error::new(
+            import.span(),
+            "import name can only be specified once",
+        ));
+    }
+
+    Ok(squote! {
+        #{import}!(#item_impl);
+    })
 }
