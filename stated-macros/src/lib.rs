@@ -4,6 +4,7 @@ use syn::{Error, Item, Meta, Token, parse_macro_input, punctuated::Punctuated, s
 use crate::expand::{stated, stated_internal};
 
 mod expand;
+mod exts;
 mod utils;
 
 #[proc_macro_attribute]
