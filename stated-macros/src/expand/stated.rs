@@ -45,7 +45,7 @@ pub fn expand_item_struct(
 
         #[macro_export]
         #[doc(hidden)]
-        macro_rules! #{export} {
+        macro_rules! #export {
             ($($tt:tt)*) => {
                 // Emit the input, but with the metas attached.
                 #[::stated::stated_internal(#metas)]
@@ -97,6 +97,6 @@ pub fn expand_item_impl(
     }
 
     Ok(squote! {
-        #{import}!(#item_impl);
+        #import!(#item_impl);
     })
 }
