@@ -158,6 +158,9 @@
 //! added. It returns a `Message` (a type-aliased `String`).
 //!
 //! ```
+//! pub type Message = String;
+//! 
+//! /* ... */
 //! # /*
 //! #[stated]
 //! impl<#[stated] S> MessageBuilder<S> {
@@ -176,8 +179,6 @@
 //!     }
 //! }
 //! # */
-//! #
-//! # mod __ {} // Suppresses `rustdoc::invalid_rust_codeblocks` on this block.
 //! ```
 //!
 //! `MessageBuilder` can be used like any other builder...
