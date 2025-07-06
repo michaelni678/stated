@@ -72,13 +72,15 @@
 //! parameter `S` is [designated](#designate).
 //!
 //! ```
-//! # use stated::stated;
-//! #
+//! # /*
 //! #[stated(states(HasRecipient, HasBody))]
 //! pub struct MessageBuilder<#[stated] S> {
 //!     recipients: Vec<String>,
 //!     body: String,
 //! }
+//! # */
+//! #
+//! # mod __ {} // Suppresses `rustdoc::invalid_rust_codeblocks` on this block.
 //! ```
 //!
 //! When `MessageBuilder` is constructed with `MessageBuilder::new`, states
@@ -86,14 +88,7 @@
 //! automatically [inferred](#infer).
 //!
 //! ```
-//! # use stated::stated;
-//! #
-//! # #[stated(states(HasRecipient, HasBody))]
-//! # pub struct MessageBuilder<#[stated] S> {
-//! #     recipients: Vec<String>,
-//! #     body: String,
-//! # }
-//! #
+//! # /*
 //! #[stated]
 //! impl<#[stated] S> MessageBuilder<S> {
 //!     #[stated]
@@ -106,6 +101,9 @@
 //!
 //!     /* ... */
 //! }
+//! # */
+//! #
+//! # mod __ {} // Suppresses `rustdoc::invalid_rust_codeblocks` on this block.
 //! ```
 //!
 //! When `MessageBuilder::recipient` is called, it [assigns](#assign) the
@@ -115,14 +113,7 @@
 //! proper `MessageBuilder`.
 //!
 //! ```
-//! # use stated::stated;
-//! #
-//! # #[stated(states(HasRecipient, HasBody))]
-//! # pub struct MessageBuilder<#[stated] S> {
-//! #     recipients: Vec<String>,
-//! #     body: String,
-//! # }
-//! #
+//! # /*
 //! #[stated]
 //! impl<#[stated] S> MessageBuilder<S> {
 //!     /* ... */
@@ -135,6 +126,9 @@
 //!
 //!     /* ... */
 //! }
+//! # */
+//! #
+//! # mod __ {} // Suppresses `rustdoc::invalid_rust_codeblocks` on this block.
 //! ```
 //!
 //! When `MessageBuilder::body` is called, it both [rejects](#reject) and
@@ -147,14 +141,7 @@
 //! proper `MessageBuilder`.
 //!
 //! ```
-//! # use stated::stated;
-//! #
-//! # #[stated(states(HasRecipient, HasBody))]
-//! # pub struct MessageBuilder<#[stated] S> {
-//! #     recipients: Vec<String>,
-//! #     body: String,
-//! # }
-//! #
+//! # /*
 //! #[stated]
 //! impl<#[stated] S> MessageBuilder<S> {
 //!     /* ... */
@@ -172,22 +159,16 @@
 //!
 //!     /* ... */
 //! }
+//! # */
+//! #
+//! # mod __ {} // Suppresses `rustdoc::invalid_rust_codeblocks` on this block.
 //! ```
 //!
 //! `MessageBuilder::build` [asserts](#assert) that a recipient was added. It
 //! returns a `Message` (a type-aliased `String`).
 //!
 //! ```
-//! # use stated::stated;
-//! #
-//! # pub type Message = String;
-//! #
-//! # #[stated(states(HasRecipient, HasBody))]
-//! # pub struct MessageBuilder<#[stated] S> {
-//! #     recipients: Vec<String>,
-//! #     body: String,
-//! # }
-//! #
+//! # /*
 //! #[stated]
 //! impl<#[stated] S> MessageBuilder<S> {
 //!     /* ... */
@@ -204,6 +185,9 @@
 //!         format!("To: {to}\n{body}")
 //!     }
 //! }
+//! # */
+//! #
+//! # mod __ {} // Suppresses `rustdoc::invalid_rust_codeblocks` on this block.
 //! ```
 //!
 //! `MessageBuilder` can be used like any other builder...
