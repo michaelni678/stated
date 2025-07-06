@@ -5,41 +5,30 @@
 //! A state is an identifier that can be either [disabled](`N`) or
 //! [enabled](`Y`).
 //!
-//! States are [declared](#declare) and [preset](#preset) where the struct is
-//! defined. States are [asserted](#assert), [rejected](#reject),
-//! [assigned](#assign), and [deleted](#delete) where an associated function is
-//! defined.
+//! States are [declared](#declare--preset) and [preset](#declare--preset) where
+//! the struct is defined. States are [asserted](#assert--reject),
+//! [rejected](#assert--reject), [assigned](#assign--delete), and
+//! [deleted](#assign--delete) where an associated function is defined.
 //!
-//! ## Declare
+//! ## Declare / Preset
 //!
 //! Use the `states` property to declare states. All states that are
-//! [preset](#preset), [asserted](#assert), [rejected](#reject),
-//! [assigned](#assign), and [deleted](#delete) must be declared.
-//!
-//! ## Preset
+//! [preset](#declare--preset), [asserted](#assert--reject),
+//! [rejected](#assert--reject), [assigned](#assign--delete), and
+//! [deleted](#assign--delete) must be declared.
 //!
 //! States default to being disabled when constructed. Use the `preset`
 //! property to enable the specified states when constructed.
 //!
-//! ## Assert
+//! ## Assert / Reject
 //!
-//! Ensure a state is enabled when calling an associated function with the
-//! `assert` property.
+//! When calling an associated function, ensure a state is enabled with the
+//! `assert` property or disabled with the `reject` property.
 //!
-//! ## Reject
+//! ## Assign / Delete
 //!
-//! Ensure a state is disabled when calling an associated function with the
-//! `reject` property.
-//!
-//! ## Assign
-//!
-//! Transition a state to be enabled after calling an associated function with
-//! the `assign` property.
-//!
-//! ## Delete
-//!
-//! Transition a state to be disabled after calling an associated function with
-//! the `assign` property.
+//! When calling an associated function, transition a state to be enabled with
+//! the `assign` property or disabled with the `delete` property.
 //!
 //! # Syntax
 //!
@@ -68,8 +57,9 @@
 //! This example is also available in the [examples directory](https://github.com/michaelni678/stated/examples/read_me.rs).
 //!
 //! The `MessageBuilder` struct is defined with states `HasRecipient` and
-//! `HasBody` [declared](#declare). No states are [preset](#preset). The generic
-//! parameter `S` is [designated](#designate).
+//! `HasBody` [declared](#declare--preset). No states are
+//! [preset](#declare--preset). The generic parameter `S` is
+//! [designated](#designate).
 //!
 //! ```
 //! # /*
@@ -106,9 +96,9 @@
 //! # mod __ {} // Suppresses `rustdoc::invalid_rust_codeblocks` on this block.
 //! ```
 //!
-//! When `MessageBuilder::recipient` is called, it [assigns](#assign) the
-//! `HasRecipient` state. Subsequent calls will see this state is enabled. In
-//! the return type, the outgoing state type is automatically
+//! When `MessageBuilder::recipient` is called, it [assigns](#assign--delete)
+//! the `HasRecipient` state. Subsequent calls will see this state is enabled.
+//! In the return type, the outgoing state type is automatically
 //! [inferred](#infer). In the function body, `_` is replaced to return the
 //! proper `MessageBuilder`.
 //!
@@ -131,10 +121,10 @@
 //! # mod __ {} // Suppresses `rustdoc::invalid_rust_codeblocks` on this block.
 //! ```
 //!
-//! When `MessageBuilder::body` is called, it both [rejects](#reject) and
-//! [assigns](#assign) the `HasBody` state. Since `MessageBuilder` does not have
-//! a method that [deletes](#delete) the `HasBody` state, `MessageBuilder::body`
-//! can only be called once.
+//! When `MessageBuilder::body` is called, it both [rejects](#assert--reject)
+//! and [assigns](#assign--delete) the `HasBody` state. Since `MessageBuilder`
+//! does not have a method that [deletes](#assign--delete) the `HasBody` state,
+//! `MessageBuilder::body` can only be called once.
 //!
 //! In the return type, the outgoing state type is automatically
 //! [inferred](#infer). In the function body, `_` is replaced to return the
@@ -164,8 +154,8 @@
 //! # mod __ {} // Suppresses `rustdoc::invalid_rust_codeblocks` on this block.
 //! ```
 //!
-//! `MessageBuilder::build` [asserts](#assert) that a recipient was added. It
-//! returns a `Message` (a type-aliased `String`).
+//! `MessageBuilder::build` [asserts](#assert--reject) that a recipient was
+//! added. It returns a `Message` (a type-aliased `String`).
 //!
 //! ```
 //! # /*
@@ -351,6 +341,8 @@
 //!     #
 //!     #[stated(states(A, B, C))]
 //!     pub struct Example<#[stated] S>;
+//!
+//!     /* ... */
 //! }
 //!
 //! mod b {
@@ -375,6 +367,8 @@
 //!     #
 //!     #[stated(states(A, B, C))]
 //!     pub struct Example<#[stated] S>;
+//!
+//!     /* ... */
 //! }
 //!
 //! mod b {
@@ -391,6 +385,26 @@
 //! ```
 //!
 //! ## Internal Macro
+//!
+//! If you don't want to rely on the impl block importing tokens from the struct
+//! definition, you can declare states directly on the impl block. Stated
+//! exposes the [`stated_internal`] macro for this purpose.
+//!
+//! ```
+//! use stated::stated_internal;
+//!
+//! #[stated_internal]
+//! pub struct Example<#[stated] S>;
+//!
+//! #[stated_internal(states(A, B, C), preset(C))]
+//! impl<#[stated] S> Example<S> {
+//!     /* ... */
+//! }
+//! ```
+//!
+//! At first glance, this may look like you can have different states declared
+//! for each impl block, but that won't work as intended. To avoid making
+//! mistakes, use the normal [`macro@stated`] macro when possible.
 
 extern crate self as stated;
 
