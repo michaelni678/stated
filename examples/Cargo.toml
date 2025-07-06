@@ -1,0 +1,11 @@
+[package]
+name = "examples"
+edition = "2024"
+publish = false
+
+[dev-dependencies]
+stated = { workspace = true }
+
+[[example]]
+name = "read_me"
+path = "read_me.rs"
