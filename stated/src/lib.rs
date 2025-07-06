@@ -23,11 +23,23 @@
 //!
 //! ## Assert
 //!
+//! Ensure a state is enabled when calling an associated function with the
+//! `assert` property.
+//!
 //! ## Reject
+//!
+//! Ensure a state is disabled when calling an associated function with the
+//! `reject` property.
 //!
 //! ## Assign
 //!
+//! Transition a state to be enabled after calling an associated function with
+//! the `assign` property.
+//!
 //! ## Delete
+//!
+//! Transition a state to be disabled after calling an associated function with
+//! the `assign` property.
 //!
 //! # Syntax
 //!
