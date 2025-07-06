@@ -109,7 +109,7 @@ pub fn expand_item_impl(
     }
 
     // Validate the preset states are a subset of the declared states.
-    if let Some(state) = preset.iter().filter(|state| !states.contains(state)).next() {
+    if let Some(state) = preset.iter().find(|state| !states.contains(state)) {
         return Err(Error::new(
             state.span(),
             "preset state is not a declared state",
@@ -191,27 +191,27 @@ pub fn expand_item_impl(
                 return Err(Error::new(state.span(), "state is already deleted"));
             }
 
-            if let Some(state) = assert.iter().filter(|state| !states.contains(state)).next() {
+            if let Some(state) = assert.iter().find(|state| !states.contains(state)) {
                 return Err(Error::new(state.span(), "asserted state is not declared"));
             }
 
             // Validate `reject` is a subset of `states`.
-            if let Some(state) = reject.iter().filter(|state| !states.contains(state)).next() {
+            if let Some(state) = reject.iter().find(|state| !states.contains(state)) {
                 return Err(Error::new(state.span(), "rejected state is not declared"));
             }
 
             // Validate `assign` is a subset of `states`.
-            if let Some(state) = assign.iter().filter(|state| !states.contains(state)).next() {
+            if let Some(state) = assign.iter().find(|state| !states.contains(state)) {
                 return Err(Error::new(state.span(), "assigned state is not declared"));
             }
 
             // Validate `delete` is a subset of `states`.
-            if let Some(state) = delete.iter().filter(|state| !states.contains(state)).next() {
+            if let Some(state) = delete.iter().find(|state| !states.contains(state)) {
                 return Err(Error::new(state.span(), "deleted state is not declared"));
             }
 
             // Validate `assert` and `reject` are disjoint.
-            if let Some(state) = reject.iter().filter(|state| assert.contains(state)).next() {
+            if let Some(state) = reject.iter().find(|state| assert.contains(state)) {
                 return Err(Error::new(
                     state.span(),
                     "rejected state cannot also be asserted",
@@ -219,7 +219,7 @@ pub fn expand_item_impl(
             }
 
             // Validate `assign` and `delete` are disjoint.
-            if let Some(state) = delete.iter().filter(|state| assign.contains(state)).next() {
+            if let Some(state) = delete.iter().find(|state| assign.contains(state)) {
                 return Err(Error::new(
                     state.span(),
                     "deleted state cannot also be assigned",
@@ -227,7 +227,7 @@ pub fn expand_item_impl(
             }
 
             // Validate `assert` and `assign` are disjoint.
-            if let Some(state) = assign.iter().filter(|state| assert.contains(state)).next() {
+            if let Some(state) = assign.iter().find(|state| assert.contains(state)) {
                 // NOTE: This probably shouldn't emit an error, a warning makes more sense.
                 return Err(Error::new(
                     state.span(),
@@ -236,7 +236,7 @@ pub fn expand_item_impl(
             }
 
             // Validate `reject` and `delete` are disjoint.
-            if let Some(state) = delete.iter().filter(|state| reject.contains(state)).next() {
+            if let Some(state) = delete.iter().find(|state| reject.contains(state)) {
                 // NOTE: This probably shouldn't emit an error, a warning makes more sense.
                 return Err(Error::new(
                     state.span(),
