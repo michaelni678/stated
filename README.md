@@ -2,11 +2,11 @@
 <h3 align="center">Rust typestate. made simple</h3>
 <div align="center">
 
-[<img alt="docs.rs" src="https://img.shields.io/badge/docs.rs-seventy-58a78a?style=for-the-badge&logo=Docs.rs">](https://docs.rs/stated)
+[<img alt="docs.rs" src="https://img.shields.io/badge/docs.rs-stated-58a78a?style=for-the-badge&logo=Docs.rs">](https://docs.rs/stated)
 &nbsp;&nbsp;&nbsp;
-[<img alt="crates.io" src="https://img.shields.io/crates/v/seventy?style=for-the-badge&logo=Rust">](https://crates.io/crates/stated)
+[<img alt="crates.io" src="https://img.shields.io/crates/v/stated?style=for-the-badge&logo=Rust">](https://crates.io/crates/stated)
 &nbsp;&nbsp;&nbsp;
-[<img alt="github" src="https://img.shields.io/badge/github-seventy-gray?style=for-the-badge&logo=GitHub&color=669bbc">](https://github.com/michaelni678/stated)
+[<img alt="github" src="https://img.shields.io/badge/github-stated-gray?style=for-the-badge&logo=GitHub&color=669bbc">](https://github.com/michaelni678/stated)
 
 </div>
 
