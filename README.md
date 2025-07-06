@@ -12,7 +12,7 @@
 
 **Stated** simplifies working with the typestate pattern.
 
-- ** Why typestate pattern?**
+- **Why typestate pattern?**
 
     The typestate pattern can ensure that methods are called in the correct order at compile time. 
     A common use-case is with builder structs, where it guarantees that required fields are set 
@@ -25,7 +25,7 @@ The example below defines a `MessageBuilder` struct.
 Before calling `MessageBuilder::build`, you must call `MessageBuilder::recipient` at least once.  
 The `MessageBuilder::body` method can be called no more than once.
 
-These constraints are enforced at compile time rather than runtime.
+These constraints are enforced at compile time rather than runtime. 
 
 ```rust
 use stated::stated;
@@ -79,10 +79,16 @@ impl<#[stated] S> MessageBuilder<S> {
 }
 
 let message = MessageBuilder::new()
-        .recipient("Bob")
-        .recipient("Rob")
-        .body("Hello, World!")?
-        .build();
+    .recipient("Bob")
+    .recipient("Rob")
+    .body("Hello, World!")?
+    .build();
+
+// The code below won't compile, because `MessageBuilder::build` cannot be 
+// called before `MessageBuilder::recipient`.
+let message = MessageBuilder::new()
+    .body("Hello, World!")?
+    .build();
 ```
 
 See the [examples](/examples) directory for more!
