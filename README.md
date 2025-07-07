@@ -1,5 +1,5 @@
 <h1 align="center">Stated</h1>
-<h3 align="center">Rust typestate. made simple</h3>
+<h3 align="center">Rust typestate, made simple</h3>
 <div align="center">
 
 [<img alt="docs.rs" src="https://img.shields.io/badge/docs.rs-stated-58a78a?style=for-the-badge&logo=Docs.rs">](https://docs.rs/stated)
