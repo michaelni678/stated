@@ -161,6 +161,7 @@
 //! pub type Message = String;
 //!
 //! /* ... */
+//! 
 //! # /*
 //! #[stated]
 //! impl<#[stated] S> MessageBuilder<S> {
