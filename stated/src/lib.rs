@@ -53,8 +53,8 @@
 //!
 //! # Example
 //!
-//! Let's dissect the example from the [README](https://github.com/michaelni678/stated/README.md).
-//! This example is also available in the [examples directory](https://github.com/michaelni678/stated/examples/read_me.rs).
+//! Let's dissect the example from the [README](https://github.com/michaelni678/stated/blob/main/README.md).
+//! This example is also available in the [examples module](examples).
 //!
 //! The `MessageBuilder` struct is defined with states `HasRecipient` and
 //! `HasBody` [declared](#declare--preset). No states are
@@ -411,6 +411,12 @@
 extern crate self as stated;
 
 pub use stated_macros::{stated, stated_internal};
+
+#[cfg(docsrs)]
+pub mod examples {
+    /// The example on the [README](https://github.com/michaelni678/stated/blob/main/README.md).
+    pub mod read_me;
+}
 
 /// Indicates a disabled state.
 #[derive(Debug, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
