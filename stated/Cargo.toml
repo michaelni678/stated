@@ -11,5 +11,9 @@ keywords = ["typestate"]
 description = "Typestate pattern, made simple"
 documentation = "https://docs.rs/stated"
 
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
 [dependencies]
 stated-macros = { path = "../stated-macros", version = "0.1.0" }

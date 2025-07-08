@@ -412,6 +412,11 @@ extern crate self as stated;
 
 pub use stated_macros::{stated, stated_internal};
 
+#[cfg(docsrs)]
+pub mod examples {
+    pub mod read_me;
+}
+
 /// Indicates a disabled state.
 #[derive(Debug, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct N;
