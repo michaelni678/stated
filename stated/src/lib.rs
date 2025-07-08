@@ -54,7 +54,7 @@
 //! # Example
 //!
 //! Let's dissect the example from the [README](https://github.com/michaelni678/stated/README.md).
-//! This example is also available in the [examples directory](https://github.com/michaelni678/stated/examples/read_me.rs).
+//! This example is also available in the [examples module](examples).
 //!
 //! The `MessageBuilder` struct is defined with states `HasRecipient` and
 //! `HasBody` [declared](#declare--preset). No states are
