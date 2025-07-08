@@ -53,7 +53,7 @@
 //!
 //! # Example
 //!
-//! Let's dissect the example from the [README](https://github.com/michaelni678/stated/README.md).
+//! Let's dissect the example from the [README](https://github.com/michaelni678/stated/blob/main/README.md).
 //! This example is also available in the [examples module](examples).
 //!
 //! The `MessageBuilder` struct is defined with states `HasRecipient` and
@@ -414,6 +414,7 @@ pub use stated_macros::{stated, stated_internal};
 
 #[cfg(docsrs)]
 pub mod examples {
+    /// The example on the [README](https://github.com/michaelni678/stated/blob/main/README.md).
     pub mod read_me;
 }
 
