@@ -1,3 +1,5 @@
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+
 //! Stated simplifies working with the typestate pattern.
 //!
 //! # Managing States
@@ -54,7 +56,7 @@
 //! # Example
 //!
 //! Let's dissect the example from the [README](https://github.com/michaelni678/stated/blob/main/README.md).
-//! This example is also available in the [examples module](examples).
+//! This example is also available in the [examples module](guide::examples).
 //!
 //! The `MessageBuilder` struct is defined with states `HasRecipient` and
 //! `HasBody` [declared](#declare--preset). No states are
@@ -321,8 +323,8 @@
 //!
 //! let message = MessageBuilder::new()
 //!     .body("Hello, World!")?
-//!     .body("Hello, again...")?
-//!     .build(); // HasBody rejection fails.
+//!     .body("Hello, again...")? // HasBody rejection fails.
+//!     .build(); 
 //! #
 //! # Ok::<_, &'static str>(())
 //! ```
@@ -412,11 +414,8 @@ extern crate self as stated;
 
 pub use stated_macros::{stated, stated_internal};
 
-#[cfg(docsrs)]
-pub mod examples {
-    /// The example on the [README](https://github.com/michaelni678/stated/blob/main/README.md).
-    pub mod read_me;
-}
+#[cfg(feature = "guide")]
+pub mod guide;
 
 /// Indicates a disabled state.
 #[derive(Debug, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
