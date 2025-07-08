@@ -161,7 +161,7 @@
 //! pub type Message = String;
 //!
 //! /* ... */
-//!
+//! 
 //! # /*
 //! #[stated]
 //! impl<#[stated] S> MessageBuilder<S> {
@@ -185,8 +185,63 @@
 //! `MessageBuilder` can be used like any other builder...
 //!
 //! ```
-//! # use stated::{stated, examples::read_me::MessageBuilder};
+//! # use stated::stated;
 //! #
+//! # pub type Message = String;
+//! #
+//! # #[stated(states(HasRecipient, HasBody))]
+//! # pub struct MessageBuilder<#[stated] S> {
+//! #     recipients: Vec<String>,
+//! #     body: String,
+//! # }
+//! #
+//! # #[stated]
+//! # impl<#[stated] S> MessageBuilder<S> {
+//! #     #[stated]
+//! #     pub fn new() -> MessageBuilder<_> {
+//! #         MessageBuilder {
+//! #             recipients: Vec::new(),
+//! #             body: String::new(),
+//! #         }
+//! #     }
+//! #
+//! #     #[stated(assign(HasRecipient))]
+//! #     pub fn recipient(mut self, recipient: impl Into<String>) -> MessageBuilder<_> {
+//! #         self.recipients.push(recipient.into());
+//! #         _
+//! #     }
+//! #
+//! #     #[stated(reject(HasBody), assign(HasBody))]
+//! #     pub fn body(mut self, body: impl Into<String>) -> Result<MessageBuilder<_>, &'static str> {
+//! #         let body = body.into();
+//! #         if !body.is_ascii() {
+//! #             return Err("Body contains non-ASCII characters");
+//! #         }
+//! #
+//! #         self.body = body;
+//! #         Ok(_)
+//! #     }
+//! #
+//! #     #[stated(assert(HasRecipient))]
+//! #     pub fn build(self) -> Message {
+//! #         let to = self.recipients.join(" & ");
+//! #         let mut body = self.body;
+//! #
+//! #         if body.is_empty() {
+//! #             body.push_str("<empty body>");
+//! #         }
+//! #
+//! #         format!("To: {to}\n{body}")
+//! #     }
+//! # }
+//! #
+//! let message = MessageBuilder::new()
+//!     .recipient("Bob")
+//!     .body("Hello, World!")?
+//!     .build();
+//!
+//! assert_eq!(message, "To: Bob\nHello, World!");
+//!
 //! let message = MessageBuilder::new()
 //!     .recipient("Bob")
 //!     .recipient("Rob")
@@ -194,12 +249,10 @@
 //!     .build();
 //!
 //! assert_eq!(message, "To: Bob & Rob\nHello, World!");
-//! ```
 //!
-//! ```
-//! # use stated::{stated, examples::read_me::MessageBuilder};
-//! #
-//! let message = MessageBuilder::new().recipient("Bob").build();
+//! let message = MessageBuilder::new()
+//!     .recipient("Bob")
+//!     .build();
 //!
 //! assert_eq!(message, "To: Bob\n<empty body>");
 //! #
@@ -209,23 +262,67 @@
 //! ... but improper usage results in a compilation error!
 //!
 //! ```compile_fail,E0599
-//! # use stated::{stated, examples::read_me::MessageBuilder};
+//! # use stated::stated;
+//! #
+//! # pub type Message = String;
+//! #
+//! # #[stated(states(HasRecipient, HasBody))]
+//! # pub struct MessageBuilder<#[stated] S> {
+//! #     recipients: Vec<String>,
+//! #     body: String,
+//! # }
+//! #
+//! # #[stated]
+//! # impl<#[stated] S> MessageBuilder<S> {
+//! #     #[stated]
+//! #     pub fn new() -> MessageBuilder<_> {
+//! #         MessageBuilder {
+//! #             recipients: Vec::new(),
+//! #             body: String::new(),
+//! #         }
+//! #     }
+//! #
+//! #     #[stated(assign(HasRecipient))]
+//! #     pub fn recipient(mut self, recipient: impl Into<String>) -> MessageBuilder<_> {
+//! #         self.recipients.push(recipient.into());
+//! #         _
+//! #     }
+//! #
+//! #     #[stated(reject(HasBody), assign(HasBody))]
+//! #     pub fn body(mut self, body: impl Into<String>) -> Result<MessageBuilder<_>, &'static str> {
+//! #         let body = body.into();
+//! #         if !body.is_ascii() {
+//! #             return Err("Body contains non-ASCII characters");
+//! #         }
+//! #
+//! #         self.body = body;
+//! #         Ok(_)
+//! #     }
+//! #
+//! #     #[stated(assert(HasRecipient))]
+//! #     pub fn build(self) -> Message {
+//! #         let to = self.recipients.join(" & ");
+//! #         let mut body = self.body;
+//! #
+//! #         if body.is_empty() {
+//! #             body.push_str("<empty body>");
+//! #         }
+//! #
+//! #         format!("To: {to}\n{body}")
+//! #     }
+//! # }
 //! #
 //! let message = MessageBuilder::new()
 //!     .body("Hello, World!")?
 //!     .build(); // HasRecipient assertion fails.
-//! #
-//! # Ok::<_, &'static str>(())
-//! ```
 //!
-//! ```compile_fail,E0599
-//! # use stated::{stated, examples::read_me::MessageBuilder};
-//! #
 //! let message = MessageBuilder::new()
-//!     .recipient("Bob")
+//!     .build(); // HasRecipient assertion fails.
+//!
+//! let message = MessageBuilder::new()
 //!     .body("Hello, World!")?
-//!     .body("Hello, again...")? // HasBody rejection fails.
-//!     .build();
+//!     .body("Hello, again...")?
+//!     .build(); // HasBody rejection fails.
 //! #
 //! # Ok::<_, &'static str>(())
 //! ```
@@ -315,7 +412,7 @@ extern crate self as stated;
 
 pub use stated_macros::{stated, stated_internal};
 
-#[cfg(any(docsrs, doctest))]
+#[cfg(docsrs)]
 pub mod examples {
     /// The example on the [README](https://github.com/michaelni678/stated/blob/main/README.md).
     pub mod read_me;
