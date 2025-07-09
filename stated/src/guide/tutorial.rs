@@ -1,5 +1,5 @@
 //! How to Use Stated.
-//! 
+//!
 //! # Managing States
 //!
 //! A state is an identifier that can be either [disabled](`stated::N`) or
@@ -161,7 +161,7 @@
 //! pub type Message = String;
 //!
 //! /* ... */
-//! 
+//!
 //! # /*
 //! #[stated]
 //! impl<#[stated] S> MessageBuilder<S> {
@@ -185,55 +185,7 @@
 //! `MessageBuilder` can be used like any other builder...
 //!
 //! ```
-//! # use stated::stated;
-//! #
-//! # pub type Message = String;
-//! #
-//! # #[stated(states(HasRecipient, HasBody))]
-//! # pub struct MessageBuilder<#[stated] S> {
-//! #     recipients: Vec<String>,
-//! #     body: String,
-//! # }
-//! #
-//! # #[stated]
-//! # impl<#[stated] S> MessageBuilder<S> {
-//! #     #[stated]
-//! #     pub fn new() -> MessageBuilder<_> {
-//! #         MessageBuilder {
-//! #             recipients: Vec::new(),
-//! #             body: String::new(),
-//! #         }
-//! #     }
-//! #
-//! #     #[stated(assign(HasRecipient))]
-//! #     pub fn recipient(mut self, recipient: impl Into<String>) -> MessageBuilder<_> {
-//! #         self.recipients.push(recipient.into());
-//! #         _
-//! #     }
-//! #
-//! #     #[stated(reject(HasBody), assign(HasBody))]
-//! #     pub fn body(mut self, body: impl Into<String>) -> Result<MessageBuilder<_>, &'static str> {
-//! #         let body = body.into();
-//! #         if !body.is_ascii() {
-//! #             return Err("Body contains non-ASCII characters");
-//! #         }
-//! #
-//! #         self.body = body;
-//! #         Ok(_)
-//! #     }
-//! #
-//! #     #[stated(assert(HasRecipient))]
-//! #     pub fn build(self) -> Message {
-//! #         let to = self.recipients.join(" & ");
-//! #         let mut body = self.body;
-//! #
-//! #         if body.is_empty() {
-//! #             body.push_str("<empty body>");
-//! #         }
-//! #
-//! #         format!("To: {to}\n{body}")
-//! #     }
-//! # }
+//! # use stated::{stated, guide::examples::read_me::MessageBuilder};
 //! #
 //! let message = MessageBuilder::new()
 //!     .recipient("Bob")
@@ -241,7 +193,13 @@
 //!     .build();
 //!
 //! assert_eq!(message, "To: Bob\nHello, World!");
+//! #
+//! # Ok::<_, &'static str>(())
+//! ```
 //!
+//! ```
+//! # use stated::{stated, guide::examples::read_me::MessageBuilder};
+//! #
 //! let message = MessageBuilder::new()
 //!     .recipient("Bob")
 //!     .recipient("Rob")
@@ -249,80 +207,46 @@
 //!     .build();
 //!
 //! assert_eq!(message, "To: Bob & Rob\nHello, World!");
-//!
-//! let message = MessageBuilder::new()
-//!     .recipient("Bob")
-//!     .build();
-//!
-//! assert_eq!(message, "To: Bob\n<empty body>");
 //! #
 //! # Ok::<_, &'static str>(())
+//! ```
+//!
+//! ```
+//! # use stated::{stated, guide::examples::read_me::MessageBuilder};
+//! #
+//! let message = MessageBuilder::new().recipient("Bob").build();
+//!
+//! assert_eq!(message, "To: Bob\n<empty body>");
 //! ```
 //!
 //! ... but improper usage results in a compilation error!
 //!
 //! ```compile_fail,E0599
-//! # use stated::stated;
-//! #
-//! # pub type Message = String;
-//! #
-//! # #[stated(states(HasRecipient, HasBody))]
-//! # pub struct MessageBuilder<#[stated] S> {
-//! #     recipients: Vec<String>,
-//! #     body: String,
-//! # }
-//! #
-//! # #[stated]
-//! # impl<#[stated] S> MessageBuilder<S> {
-//! #     #[stated]
-//! #     pub fn new() -> MessageBuilder<_> {
-//! #         MessageBuilder {
-//! #             recipients: Vec::new(),
-//! #             body: String::new(),
-//! #         }
-//! #     }
-//! #
-//! #     #[stated(assign(HasRecipient))]
-//! #     pub fn recipient(mut self, recipient: impl Into<String>) -> MessageBuilder<_> {
-//! #         self.recipients.push(recipient.into());
-//! #         _
-//! #     }
-//! #
-//! #     #[stated(reject(HasBody), assign(HasBody))]
-//! #     pub fn body(mut self, body: impl Into<String>) -> Result<MessageBuilder<_>, &'static str> {
-//! #         let body = body.into();
-//! #         if !body.is_ascii() {
-//! #             return Err("Body contains non-ASCII characters");
-//! #         }
-//! #
-//! #         self.body = body;
-//! #         Ok(_)
-//! #     }
-//! #
-//! #     #[stated(assert(HasRecipient))]
-//! #     pub fn build(self) -> Message {
-//! #         let to = self.recipients.join(" & ");
-//! #         let mut body = self.body;
-//! #
-//! #         if body.is_empty() {
-//! #             body.push_str("<empty body>");
-//! #         }
-//! #
-//! #         format!("To: {to}\n{body}")
-//! #     }
-//! # }
+//! # use stated::{stated, guide::examples::read_me::MessageBuilder};
 //! #
 //! let message = MessageBuilder::new()
 //!     .body("Hello, World!")?
 //!     .build(); // HasRecipient assertion fails.
+//! #
+//! # Ok::<_, &'static str>(())
+//! ```
 //!
+//! ```compile_fail,E0599
+//! # use stated::{stated, guide::examples::read_me::MessageBuilder};
+//! #
 //! let message = MessageBuilder::new()
 //!     .build(); // HasRecipient assertion fails.
+//! #
+//! # Ok::<_, &'static str>(())
+//! ```
 //!
+//! ```compile_fail,E0599
+//! # use stated::{stated, guide::examples::read_me::MessageBuilder};
+//! #
 //! let message = MessageBuilder::new()
 //!     .body("Hello, World!")?
 //!     .body("Hello, again...")? // HasBody rejection fails.
-//!     .build(); 
+//!     .build();
 //! #
 //! # Ok::<_, &'static str>(())
 //! ```
@@ -390,7 +314,8 @@
 //!
 //! If you don't want to rely on the impl block importing tokens from the struct
 //! definition, you can declare states directly on the impl block. Stated
-//! exposes the [`stated_internal`](`stated::stated_internal`) macro for this purpose.
+//! exposes the [`stated_internal`](`stated::stated_internal`) macro for this
+//! purpose.
 //!
 //! ```
 //! use stated::stated_internal;
@@ -406,4 +331,5 @@
 //!
 //! At first glance, this may look like you can have different states declared
 //! for each impl block, but that won't work as intended. To avoid making
-//! mistakes, use the normal [`stated`](`macro@stated::stated`) macro when possible.
+//! mistakes, use the normal [`stated`](`macro@stated::stated`) macro when
+//! possible.
