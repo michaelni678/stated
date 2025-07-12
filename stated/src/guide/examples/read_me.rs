@@ -1,3 +1,5 @@
+//! The example on the [README](https://github.com/michaelni678/stated/blob/main/README.md).
+
 use stated::stated;
 
 pub type Message = String;
@@ -48,6 +50,7 @@ impl<#[stated] S> MessageBuilder<S> {
     }
 }
 
+#[allow(dead_code)]
 fn main() -> Result<(), &'static str> {
     let message = MessageBuilder::new()
         .recipient("Bob")

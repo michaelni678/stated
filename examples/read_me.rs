@@ -1,1 +1,1 @@
-../stated/src/examples/read_me.rs
+../stated/src/guide/examples/read_me.rs

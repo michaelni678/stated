@@ -15,5 +15,8 @@ documentation = "https://docs.rs/stated"
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
+[features]
+guide = []
+
 [dependencies]
 stated-macros = { path = "../stated-macros", version = "0.1.0" }
