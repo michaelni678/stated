@@ -333,3 +333,15 @@
 //! for each impl block, but that won't work as intended. To avoid making
 //! mistakes, use the normal [`stated`](`macro@stated::stated`) macro when
 //! possible.
+//!
+//! ## Phantom Field
+//!
+//! Stated adds a [`PhantomData`](std::marker::PhantomData) field to your struct
+//! to track states. When instantiating the struct, Stated will fill this field
+//! for you.
+//!
+//! You can see this in action in the
+//! [MessageBuilder::new](super::examples::read_me::MessageBuilder::new)
+//! function from the [README](https://github.com/michaelni678/stated/blob/main/README.md)
+//! example. In the source code, `MessageBuilder` is instantiated without
+//! explicitly setting the added phantom field.
