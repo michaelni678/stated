@@ -1,9 +1,9 @@
 use std::{collections::HashMap, ops::Deref};
 
-use syn::{spanned::Spanned, *};
+use syn::{Error, Ident, Meta, Result, spanned::Spanned};
 
 /// A map of properties to identifiers.
-/// 
+///
 /// Used for mapping states.
 #[derive(Default, Clone)]
 pub struct Properties(HashMap<String, Vec<Ident>>);
