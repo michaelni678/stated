@@ -3,6 +3,8 @@ use std::{collections::HashMap, ops::Deref};
 use syn::{spanned::Spanned, *};
 
 /// A map of properties to identifiers.
+/// 
+/// Used for mapping states.
 #[derive(Default, Clone)]
 pub struct Properties(HashMap<String, Vec<Ident>>);
 
@@ -39,13 +41,13 @@ impl Properties {
 
         let property = property.to_string();
 
-        let Some(idents) = self.0.get_mut(&property) else {
+        let Some(states) = self.0.get_mut(&property) else {
             return Err(Error::new(meta.path().span(), "unsupported property"));
         };
 
         meta.require_list()?.parse_nested_meta(|meta| {
-            let ident = meta.path.require_ident().cloned()?;
-            idents.push(ident);
+            let state = meta.path.require_ident().cloned()?;
+            states.push(state);
             Ok(())
         })
     }
