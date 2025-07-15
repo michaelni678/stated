@@ -66,6 +66,8 @@
 //! #
 //! # mod __ {} // Suppresses `rustdoc::invalid_rust_codeblocks` on this block.
 //! ```
+//! 
+//! See the [tutorial](guide::tutorial) for more help!
 
 extern crate self as stated;
 

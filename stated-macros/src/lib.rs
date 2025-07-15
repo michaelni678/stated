@@ -1,3 +1,5 @@
+//! Procedural macros for [Stated](https://crates.io/crates/stated).
+
 use proc_macro::TokenStream;
 use syn::{
     Error, Item, Meta, Token, parse::Nothing, parse_macro_input, punctuated::Punctuated,
