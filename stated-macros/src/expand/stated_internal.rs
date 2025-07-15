@@ -21,8 +21,8 @@ use crate::{
     },
     utils::{
         designated::{find_designated_arg, find_designated_param},
-        properties::Properties,
         squote::{parse_squote, squote},
+        stateset::Stateset,
     },
 };
 
@@ -85,7 +85,7 @@ pub fn expand_item_impl(
         return Err(Error::new(trait_.span(), "trait impls are not supported"));
     }
 
-    let mut stateset = Properties::default().support("states").support("preset");
+    let mut stateset = Stateset::default().support("states").support("preset");
 
     stateset.extend_with_metas(&metas)?;
 
@@ -141,7 +141,7 @@ pub fn expand_item_impl(
         }
 
         for r_attr in r_attrs {
-            let mut ruleset = Properties::default()
+            let mut ruleset = Stateset::default()
                 .support("assert")
                 .support("reject")
                 .support("assign")

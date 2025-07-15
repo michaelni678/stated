@@ -2,13 +2,13 @@ use std::{collections::HashMap, ops::Deref};
 
 use syn::{Error, Ident, Meta, Result, spanned::Spanned};
 
-/// A map of properties to identifiers.
+/// A map of state properties to state identifiers.
 ///
 /// Used for mapping states.
 #[derive(Default, Clone)]
-pub struct Properties(HashMap<String, Vec<Ident>>);
+pub struct Stateset(HashMap<String, Vec<Ident>>);
 
-impl Deref for Properties {
+impl Deref for Stateset {
     type Target = HashMap<String, Vec<Ident>>;
 
     fn deref(&self) -> &Self::Target {
@@ -16,7 +16,7 @@ impl Deref for Properties {
     }
 }
 
-impl Properties {
+impl Stateset {
     /// Add support for a property.
     pub fn support(mut self, property: &str) -> Self {
         self.0.insert(property.to_string(), Vec::new());
