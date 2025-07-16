@@ -456,12 +456,13 @@ pub fn expand_item_impl(
         expansions.push(squote!(#item_impl));
     }
 
-    // Add back the impl items that don't have a ruleset.
-    item_impl.items.extend(impl_items_without_ruleset);
+    if !impl_items_without_ruleset.is_empty() {
+        // Add back the impl items that don't have a ruleset.
+        item_impl.items.extend(impl_items_without_ruleset);
+        expansions.push(squote!(#item_impl));
+    }
 
     Ok(squote! {
-        #item_impl
-
         #(#expansions)*
     })
 }
