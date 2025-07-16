@@ -3,8 +3,6 @@ use std::{collections::HashMap, ops::Deref};
 use syn::{Error, Ident, Meta, Result, spanned::Spanned};
 
 /// A map of state properties to state identifiers.
-///
-/// Used for mapping states.
 #[derive(Default, Clone)]
 pub struct Stateset(HashMap<String, Vec<Ident>>);
 
