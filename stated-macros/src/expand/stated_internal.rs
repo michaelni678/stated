@@ -89,27 +89,26 @@ pub fn expand_item_impl(
 
     stateset.extend_with_metas(&metas)?;
 
-    // Set to variables for convenience.
-    let states = &stateset["states"];
-    let preset = &stateset["preset"];
-
     // Validate at least one state was declared.
-    if states.is_empty() {
+    if stateset["states"].is_empty() {
         return Err(Error::new(metas.span(), "no states were declared"));
     }
 
     // Validate there are no duplicate declared states.
-    if let Some(state) = states.iter().duplicates().next() {
+    if let Some(state) = stateset["states"].iter().duplicates().next() {
         return Err(Error::new(state.span(), "state is already declared"));
     }
 
     // Validate there are no duplicate preset states.
-    if let Some(state) = preset.iter().duplicates().next() {
+    if let Some(state) = stateset["preset"].iter().duplicates().next() {
         return Err(Error::new(state.span(), "state is already preset"));
     }
 
     // Validate the preset states are a subset of the declared states.
-    if let Some(state) = preset.iter().find(|state| !states.contains(state)) {
+    if let Some(state) = stateset["preset"]
+        .iter()
+        .find(|state| !stateset["states"].contains(state))
+    {
         return Err(Error::new(
             state.span(),
             "preset state is not a declared state",
@@ -165,69 +164,85 @@ pub fn expand_item_impl(
                 }
             }
 
-            // Set to variables for convenience.
-            let assert = &ruleset["assert"];
-            let reject = &ruleset["reject"];
-            let assign = &ruleset["assign"];
-            let delete = &ruleset["delete"];
-
-            // Validate `assert` contains no duplicates.
-            if let Some(state) = assert.iter().duplicates().next() {
+            // Validate the asserted states contain no duplicates.
+            if let Some(state) = ruleset["assert"].iter().duplicates().next() {
                 return Err(Error::new(state.span(), "state is already asserted"));
             }
 
-            // Validate `reject` contains no duplicates.
-            if let Some(state) = reject.iter().duplicates().next() {
+            // Validate the rejected states contain no duplicates.
+            if let Some(state) = ruleset["reject"].iter().duplicates().next() {
                 return Err(Error::new(state.span(), "state is already rejected"));
             }
 
-            // Validate `assign` contains no duplicates.
-            if let Some(state) = assign.iter().duplicates().next() {
+            // Validate the assigned states contain no duplicates.
+            if let Some(state) = ruleset["assign"].iter().duplicates().next() {
                 return Err(Error::new(state.span(), "state is already assigned"));
             }
 
-            // Validate `delete` contains no duplicates.
-            if let Some(state) = delete.iter().duplicates().next() {
+            // Validate the deleted states contain no duplicates.
+            if let Some(state) = ruleset["delete"].iter().duplicates().next() {
                 return Err(Error::new(state.span(), "state is already deleted"));
             }
 
-            if let Some(state) = assert.iter().find(|state| !states.contains(state)) {
+            // Validate the asserted states are declared.
+            if let Some(state) = ruleset["assert"]
+                .iter()
+                .find(|state| !stateset["states"].contains(state))
+            {
                 return Err(Error::new(state.span(), "asserted state is not declared"));
             }
 
-            // Validate `reject` is a subset of `states`.
-            if let Some(state) = reject.iter().find(|state| !states.contains(state)) {
+            // Validate the rejected states are declared.
+            if let Some(state) = ruleset["reject"]
+                .iter()
+                .find(|state| !stateset["states"].contains(state))
+            {
                 return Err(Error::new(state.span(), "rejected state is not declared"));
             }
 
-            // Validate `assign` is a subset of `states`.
-            if let Some(state) = assign.iter().find(|state| !states.contains(state)) {
+            // Validate the asserted states are declared.
+            if let Some(state) = ruleset["assign"]
+                .iter()
+                .find(|state| !stateset["states"].contains(state))
+            {
                 return Err(Error::new(state.span(), "assigned state is not declared"));
             }
 
-            // Validate `delete` is a subset of `states`.
-            if let Some(state) = delete.iter().find(|state| !states.contains(state)) {
+            // Validate the asserted states are declared.
+            if let Some(state) = ruleset["delete"]
+                .iter()
+                .find(|state| !stateset["states"].contains(state))
+            {
                 return Err(Error::new(state.span(), "deleted state is not declared"));
             }
 
-            // Validate `assert` and `reject` are disjoint.
-            if let Some(state) = reject.iter().find(|state| assert.contains(state)) {
+            // Validate the asserted and rejected states are disjoint.
+            if let Some(state) = ruleset["reject"]
+                .iter()
+                .find(|state| ruleset["assert"].contains(state))
+            {
                 return Err(Error::new(
                     state.span(),
                     "rejected state cannot also be asserted",
                 ));
             }
 
-            // Validate `assign` and `delete` are disjoint.
-            if let Some(state) = delete.iter().find(|state| assign.contains(state)) {
+            // Validate the assigned and deleted states are disjoint.
+            if let Some(state) = ruleset["delete"]
+                .iter()
+                .find(|state| ruleset["assign"].contains(state))
+            {
                 return Err(Error::new(
                     state.span(),
                     "deleted state cannot also be assigned",
                 ));
             }
 
-            // Validate `assert` and `assign` are disjoint.
-            if let Some(state) = assign.iter().find(|state| assert.contains(state)) {
+            // Validatethe asserted and assigned states are disjoint.
+            if let Some(state) = ruleset["assign"]
+                .iter()
+                .find(|state| ruleset["assert"].contains(state))
+            {
                 // NOTE: This probably shouldn't emit an error, a warning makes more sense.
                 return Err(Error::new(
                     state.span(),
@@ -235,8 +250,11 @@ pub fn expand_item_impl(
                 ));
             }
 
-            // Validate `reject` and `delete` are disjoint.
-            if let Some(state) = delete.iter().find(|state| reject.contains(state)) {
+            // Validate the rejected and deleted states are disjoint.
+            if let Some(state) = ruleset["delete"]
+                .iter()
+                .find(|state| ruleset["reject"].contains(state))
+            {
                 // NOTE: This probably shouldn't emit an error, a warning makes more sense.
                 return Err(Error::new(
                     state.span(),
@@ -259,12 +277,6 @@ pub fn expand_item_impl(
 
     for (mut impl_item, ruleset) in impl_items_with_ruleset {
         let associated_fn = impl_item.require_fn_mut()?;
-
-        // Set to variables for convenience.
-        let assert = &ruleset["assert"];
-        let reject = &ruleset["reject"];
-        let assign = &ruleset["assign"];
-        let delete = &ruleset["delete"];
 
         let d_param = item_impl.generics.params[d_param_index].require_type_param()?;
 
@@ -300,20 +312,20 @@ pub fn expand_item_impl(
         }
 
         if has_receiver {
-            let replace_with = states
+            let replace_with = stateset["states"]
                 .iter()
-                .filter(|state| !assert.contains(state))
-                .filter(|state| !reject.contains(state))
+                .filter(|state| !ruleset["assert"].contains(state))
+                .filter(|state| !ruleset["reject"].contains(state))
                 .map(|state| parse_squote!(#state));
 
             item_impl.generics.params.call(|params| {
                 params.splice(d_param_index..(d_param_index + 1), replace_with);
             });
 
-            let states_in_ty = states.iter().map(|state| -> Type {
-                if assert.contains(state) {
+            let states_in_ty = stateset["states"].iter().map(|state| -> Type {
+                if ruleset["assert"].contains(state) {
                     parse_squote!(::stated::Y)
-                } else if reject.contains(state) {
+                } else if ruleset["reject"].contains(state) {
                     parse_squote!(::stated::N)
                 } else {
                     parse_squote!(#state)
@@ -323,14 +335,14 @@ pub fn expand_item_impl(
             // Replace the designated argument with the states-in type.
             args[d_arg_index] = parse_squote!((#(#states_in_ty),*));
 
-            let states_out_ty = states.iter().map(|state| -> Type {
-                if assign.contains(state) {
+            let states_out_ty = stateset["states"].iter().map(|state| -> Type {
+                if ruleset["assign"].contains(state) {
                     parse_squote!(::stated::Y)
-                } else if delete.contains(state) {
+                } else if ruleset["delete"].contains(state) {
                     parse_squote!(::stated::N)
-                } else if assert.contains(state) {
+                } else if ruleset["assert"].contains(state) {
                     parse_squote!(::stated::Y)
-                } else if reject.contains(state) {
+                } else if ruleset["reject"].contains(state) {
                     parse_squote!(::stated::N)
                 } else {
                     parse_squote!(#state)
@@ -365,16 +377,16 @@ pub fn expand_item_impl(
                 .params
                 .call(|params| params.remove(d_param_index));
 
-            let states_out_ty = states.iter().map(|state| -> Type {
-                if assign.contains(state) {
+            let states_out_ty = stateset["states"].iter().map(|state| -> Type {
+                if ruleset["assign"].contains(state) {
                     parse_squote!(::stated::Y)
-                } else if delete.contains(state) {
+                } else if ruleset["delete"].contains(state) {
                     parse_squote!(::stated::N)
-                } else if assert.contains(state) {
+                } else if ruleset["assert"].contains(state) {
                     parse_squote!(::stated::Y)
-                } else if reject.contains(state) {
+                } else if ruleset["reject"].contains(state) {
                     parse_squote!(::stated::N)
-                } else if preset.contains(state) {
+                } else if stateset["preset"].contains(state) {
                     parse_squote!(::stated::Y)
                 } else {
                     parse_squote!(::stated::N)
