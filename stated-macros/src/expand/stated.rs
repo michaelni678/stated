@@ -29,7 +29,7 @@ pub fn expand_item_struct(
     // Get the first export name, or default to the struct name.
     let export_name = export_names
         .next()
-        .unwrap_or(parse_squote!(#{item_struct.ident}));
+        .unwrap_or_else(|| item_struct.ident.clone());
 
     // Validate that only one export name was specified.
     if let Some(export) = export_names.next() {
