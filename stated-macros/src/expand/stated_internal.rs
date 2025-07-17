@@ -300,10 +300,10 @@ pub fn expand_item_impl(
         }
 
         if has_receiver {
-            let replace_with = stateset["states"]
+            let replace_with = states
                 .iter()
-                .filter(|state| !ruleset["assert"].contains(state))
-                .filter(|state| !ruleset["reject"].contains(state))
+                .filter(|state| !assert.contains(state))
+                .filter(|state| !reject.contains(state))
                 .map(|state| parse_squote!(#state));
 
             item_impl.generics.params.call(|params| {
