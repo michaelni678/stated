@@ -14,7 +14,7 @@ pub fn expand_item_struct(
     item_struct: ItemStruct,
 ) -> Result<TokenStream2> {
     // Extract all export names.
-    let mut exports = metas
+    let mut export_names = metas
         .call(|metas| {
             metas
                 .extract_if(.., |meta| meta.path().is_ident("export"))
@@ -27,12 +27,12 @@ pub fn expand_item_struct(
         .into_iter();
 
     // Get the first export name, or default to the struct name.
-    let export = exports
+    let export_name = export_names
         .next()
         .unwrap_or(parse_squote!(#{item_struct.ident}));
 
     // Validate that only one export name was specified.
-    if let Some(export) = exports.next() {
+    if let Some(export) = export_names.next() {
         return Err(Error::new(
             export.span(),
             "export name can only be specified once",
@@ -45,7 +45,7 @@ pub fn expand_item_struct(
 
         #[macro_export]
         #[doc(hidden)]
-        macro_rules! #export {
+        macro_rules! #export_name {
             ($($tt:tt)*) => {
                 // Emit the input, but with the metas attached.
                 #[::stated::stated_internal(#metas)]
@@ -60,7 +60,7 @@ pub fn expand_item_impl(
     item_impl: ItemImpl,
 ) -> Result<TokenStream2> {
     // Extract all the import names.
-    let mut imports = metas
+    let mut import_names = metas
         .call(|metas| {
             metas
                 .extract_if(.., |meta| meta.path().is_ident("import"))
@@ -73,8 +73,8 @@ pub fn expand_item_impl(
         .into_iter();
 
     // Get the first import name, or default to the impl type name.
-    let import = match imports.next() {
-        Some(import) => import,
+    let import_name = match import_names.next() {
+        Some(import_name) => import_name,
         None => {
             let Type::Path(TypePath { path, .. }) = item_impl.self_ty.as_ref() else {
                 return Err(Error::new(item_impl.self_ty.span(), "expected a path"));
@@ -89,14 +89,14 @@ pub fn expand_item_impl(
     };
 
     // Validate that only one import name was specified.
-    if let Some(import) = imports.next() {
+    if let Some(import_name) = import_names.next() {
         return Err(Error::new(
-            import.span(),
+            import_name.span(),
             "import name can only be specified once",
         ));
     }
 
     Ok(squote! {
-        #import!(#item_impl);
+        #import_name!(#item_impl);
     })
 }
