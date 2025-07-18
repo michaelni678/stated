@@ -9,3 +9,7 @@ stated = { workspace = true }
 [[example]]
 name = "read_me"
 path = "read_me.rs"
+
+[[example]]
+name = "read_me_pretty"
+path = "read_me_pretty.rs"
