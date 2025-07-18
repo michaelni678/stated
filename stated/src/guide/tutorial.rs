@@ -253,6 +253,23 @@
 //!
 //! # Other Stuff
 //!
+//! ## Pretty Documentation
+//!
+//! The documentation Stated generates is difficult to read due to all the
+//! generics. Use the `pretty` attribute to generate cleaner but **incorrect**
+//! documentation.
+//!
+//! Here are examples of the
+//! [normal](super::examples::read_me::MessageBuilder) and
+//! [pretty](super::examples::read_me_pretty::MessageBuilder) documentation.
+//!
+//! ```
+//! # use stated::stated;
+//! #
+//! #[stated(pretty, states(A, B, C))]
+//! pub struct Example<#[stated] S>;
+//! ```
+//!
 //! ## Export and Import
 //!
 //! Stated creates a macro to export tokens from the struct definition. These
