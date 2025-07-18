@@ -296,8 +296,6 @@ pub fn expand_item_impl(
         let args = &mut seg.arguments.require_angle_bracketed_mut()?.args;
         let d_arg_index = find_designated_arg(args, &d_param.ident)?;
 
-        let has_receiver = associated_fn.sig.receiver().is_some();
-
         struct ReplaceInferInReturnType(Type);
 
         impl VisitMut for ReplaceInferInReturnType {
@@ -311,7 +309,24 @@ pub fn expand_item_impl(
             }
         }
 
-        if has_receiver {
+        if cfg!(feature = "pretty") {
+            let mut pretty_associated_fn = associated_fn.clone();
+
+            // Add this attribute to enable this function in documentation only.
+            pretty_associated_fn.attrs.push(parse_squote!(#[cfg(doc)]));
+
+            ReplaceInferInReturnType(parse_squote!(#{d_param.ident}))
+                .visit_return_type_mut(&mut pretty_associated_fn.sig.output);
+
+            pretty_associated_fn.block = parse_squote!({
+                unreachable!();
+            });
+
+            // Push the pretty function to the impl items without rulesets.
+            impl_items_without_ruleset.push(ImplItem::Fn(pretty_associated_fn));
+        }
+
+        if associated_fn.sig.receiver().is_some() {
             let replace_with = stateset["states"]
                 .iter()
                 .filter(|state| !ruleset["assert"].contains(state))
@@ -465,7 +480,16 @@ pub fn expand_item_impl(
         ModifyStructConstructionInBlock(&ty_path.path).visit_block_mut(&mut associated_fn.block);
 
         item_impl.items.push(impl_item);
-        expansions.push(squote!(#item_impl));
+
+        if cfg!(feature = "pretty") {
+            // Don't show the actual expansion in the documentation.
+            expansions.push(squote! {
+                #[cfg(not(doc))]
+                #item_impl
+            });
+        } else {
+            expansions.push(squote!(#item_impl));
+        }
     }
 
     if !impl_items_without_ruleset.is_empty() {

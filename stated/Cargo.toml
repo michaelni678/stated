@@ -17,6 +17,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [features]
 guide = []
+pretty = ["stated-macros/pretty"]
 
 [dependencies]
 stated-macros = { path = "../stated-macros", version = "0.1.0" }
