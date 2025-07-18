@@ -253,11 +253,11 @@
 //!
 //! # Other Stuff
 //!
-//! ## Pretty Documentation
+//! ## Documentation
 //!
 //! The documentation Stated generates is difficult to read due to all the
 //! generics. Use the `pretty` attribute to generate cleaner but **incorrect**
-//! documentation.
+//! documentation for the functions.
 //!
 //! Here are examples of the
 //! [normal](super::examples::read_me::MessageBuilder) and
