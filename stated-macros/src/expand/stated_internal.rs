@@ -77,12 +77,28 @@ pub fn expand_item_struct(mut item_struct: ItemStruct) -> Result<TokenStream2> {
 }
 
 pub fn expand_item_impl(
-    metas: Punctuated<Meta, Token![,]>,
+    mut metas: Punctuated<Meta, Token![,]>,
     mut item_impl: ItemImpl,
 ) -> Result<TokenStream2> {
     // Validate the implementation isn't for a trait.
     if let Some((_, trait_, _)) = item_impl.trait_.as_ref() {
         return Err(Error::new(trait_.span(), "trait impls are not supported"));
+    }
+
+    let pretty_metas = metas.call(|metas| {
+        metas
+            .extract_if(.., |meta| meta.path().is_ident("pretty"))
+            .collect_vec()
+    });
+
+    let pretty = !pretty_metas.is_empty();
+
+    if let Some(pretty_meta) = pretty_metas.get(1) {
+        // NOTE: This probably shouldn't emit an error, a warning makes more sense.
+        return Err(Error::new(
+            pretty_meta.span(),
+            "pretty can only be specified once",
+        ));
     }
 
     let mut stateset = Stateset::default().support("states").support("preset");
@@ -309,7 +325,7 @@ pub fn expand_item_impl(
             }
         }
 
-        if cfg!(feature = "pretty") {
+        if pretty {
             let mut pretty_associated_fn = associated_fn.clone();
 
             // Add this attribute to enable this function in documentation only.
@@ -481,7 +497,7 @@ pub fn expand_item_impl(
 
         item_impl.items.push(impl_item);
 
-        if cfg!(feature = "pretty") {
+        if pretty {
             // Don't show the actual expansion in the documentation.
             expansions.push(squote! {
                 #[cfg(not(doc))]

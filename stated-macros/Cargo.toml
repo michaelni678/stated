@@ -13,9 +13,6 @@ description = "Procedural macros for Stated"
 [lib]
 proc-macro = true
 
-[features]
-pretty = []
-
 [dependencies]
 extend = "1.2.0"
 itertools = "0.14.0"
