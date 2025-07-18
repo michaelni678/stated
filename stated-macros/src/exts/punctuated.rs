@@ -17,4 +17,15 @@ pub impl<T, P> Punctuated<T, P> {
         self.extend(taken);
         returned
     }
+
+    /// Finds and removes the first element that matches the given predicate.
+    fn find_remove<F>(&mut self, f: F) -> Option<T>
+    where
+        P: Default,
+        F: FnMut(&T) -> bool,
+    {
+        self.iter()
+            .position(f)
+            .map(|index| self.call(|this| this.remove(index)))
+    }
 }

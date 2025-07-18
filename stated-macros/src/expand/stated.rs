@@ -1,7 +1,7 @@
 use proc_macro2::TokenStream as TokenStream2;
 use syn::{
-    Error, Ident, ItemImpl, ItemStruct, Meta, Result, Token, Type, TypePath,
-    punctuated::Punctuated, spanned::Spanned,
+    Error, ItemImpl, ItemStruct, Meta, Result, Token, Type, TypePath, punctuated::Punctuated,
+    spanned::Spanned,
 };
 
 use crate::{
@@ -13,31 +13,24 @@ pub fn expand_item_struct(
     mut metas: Punctuated<Meta, Token![,]>,
     item_struct: ItemStruct,
 ) -> Result<TokenStream2> {
-    // Extract all export names.
-    let mut export_names = metas
-        .call(|metas| {
-            metas
-                .extract_if(.., |meta| meta.path().is_ident("export"))
-                .map(|meta| match meta {
-                    Meta::NameValue(name_value) => Ok(parse_squote!(#{name_value.value})),
-                    other => Err(Error::new(other.span(), "export name format is incorrect")),
-                })
-                .collect::<Result<Vec<Ident>>>()
-        })?
-        .into_iter();
+    let mut export_name = None;
 
-    // Get the first export name, or default to the struct name.
-    let export_name = export_names
-        .next()
-        .unwrap_or_else(|| item_struct.ident.clone());
+    // Try to find and remove the first export name meta.
+    if let Some(meta) = metas.find_remove(|meta| meta.path().is_ident("export")) {
+        let name_value = meta.require_name_value()?;
+        export_name = Some(parse_squote!(#{name_value.value}));
+    }
 
-    // Validate that only one export name was specified.
-    if let Some(export) = export_names.next() {
+    // Validate there are no more export name metas.
+    if let Some(meta) = metas.find_remove(|meta| meta.path().is_ident("export")) {
+        // NOTE: This probably shouldn't emit an error, a warning makes more sense.
         return Err(Error::new(
-            export.span(),
+            meta.span(),
             "export name can only be specified once",
         ));
     }
+
+    let export_name = export_name.unwrap_or_else(|| item_struct.ident.clone());
 
     Ok(squote! {
         #[::stated::stated_internal]
@@ -59,21 +52,25 @@ pub fn expand_item_impl(
     mut metas: Punctuated<Meta, Token![,]>,
     item_impl: ItemImpl,
 ) -> Result<TokenStream2> {
-    // Extract all the import names.
-    let mut import_names = metas
-        .call(|metas| {
-            metas
-                .extract_if(.., |meta| meta.path().is_ident("import"))
-                .map(|meta| match meta {
-                    Meta::NameValue(name_value) => Ok(parse_squote!(#{name_value.value})),
-                    other => Err(Error::new(other.span(), "import name format is incorrect")),
-                })
-                .collect::<Result<Vec<Ident>>>()
-        })?
-        .into_iter();
+    let mut import_name = None;
 
-    // Get the first import name, or default to the impl type name.
-    let import_name = match import_names.next() {
+    // Try to find and remove the first import name meta.
+    if let Some(meta) = metas.find_remove(|meta| meta.path().is_ident("import")) {
+        let name_value = meta.require_name_value()?;
+        import_name = Some(parse_squote!(#{name_value.value}));
+    }
+
+    // Validate there are no more import name metas.
+    if let Some(meta) = metas.find_remove(|meta| meta.path().is_ident("import")) {
+        // NOTE: This probably shouldn't emit an error, a warning makes more sense.
+        return Err(Error::new(
+            meta.span(),
+            "import name can only be specified once",
+        ));
+    }
+
+    // Unwrap the import name or default to the impl type name.
+    let import_name = match import_name {
         Some(import_name) => import_name,
         None => {
             let Type::Path(TypePath { path, .. }) = item_impl.self_ty.as_ref() else {
@@ -87,14 +84,6 @@ pub fn expand_item_impl(
                 .clone()
         }
     };
-
-    // Validate that only one import name was specified.
-    if let Some(import_name) = import_names.next() {
-        return Err(Error::new(
-            import_name.span(),
-            "import name can only be specified once",
-        ));
-    }
 
     Ok(squote! {
         #import_name!(#item_impl);

@@ -85,20 +85,19 @@ pub fn expand_item_impl(
         return Err(Error::new(trait_.span(), "trait impls are not supported"));
     }
 
-    let pretty_metas = metas.call(|metas| {
-        metas
-            .extract_if(.., |meta| meta.path().is_ident("pretty"))
-            .collect_vec()
-    });
+    let mut pretty = false;
 
-    let pretty = !pretty_metas.is_empty();
+    // Try to find and remove the first pretty meta.
+    if let Some(meta) = metas.find_remove(|meta| meta.path().is_ident("pretty")) {
+        // Validate it's a path.
+        meta.require_path_only()?;
+        pretty = true;
+    }
 
-    if let Some(pretty_meta) = pretty_metas.get(1) {
+    // Validate there are no more pretty metas.
+    if let Some(meta) = metas.find_remove(|meta| meta.path().is_ident("pretty")) {
         // NOTE: This probably shouldn't emit an error, a warning makes more sense.
-        return Err(Error::new(
-            pretty_meta.span(),
-            "pretty can only be specified once",
-        ));
+        return Err(Error::new(meta.span(), "pretty can only be specified once"));
     }
 
     let mut stateset = Stateset::default().support("states").support("preset");
