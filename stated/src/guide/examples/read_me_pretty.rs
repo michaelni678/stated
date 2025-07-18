@@ -3,6 +3,7 @@
 //! There are some differences between this example and the normal
 //! [read_me](super::read_me) example.
 //!
+//! - The `pretty` attribute is added.
 //! - An export and import name is specified, since `MessageBuilder` is already
 //!   defined in the other example.
 
