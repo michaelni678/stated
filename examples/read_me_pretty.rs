@@ -1,0 +1,1 @@
+../stated/src/guide/examples/read_me_pretty.rs
