@@ -10,8 +10,6 @@ use stated::stated;
 
 pub type Message = String;
 
-// NOTE: The export name is necessary because `MessageBuilder` is defined in
-// another module.
 #[stated(pretty, states(HasRecipient, HasBody), export = MessageBuilderPretty)]
 pub struct MessageBuilder<#[stated] S> {
     recipients: Vec<String>,
