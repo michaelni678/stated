@@ -1,0 +1,72 @@
+//! The example on the [README](https://github.com/michaelni678/stated/blob/main/README.md), but with pretty documentation.
+//!
+//! There are some differences between this example and the non-pretty
+//! [read_me](super::read_me) example.
+//!
+//! - An export and import name is specified, since `MessageBuilder` is already
+//!   defined in the other example.
+
+use stated::stated;
+
+pub type Message = String;
+
+// NOTE: The export name is necessary because `MessageBuilder` is defined in
+// another module.
+#[stated(pretty, states(HasRecipient, HasBody), export = MessageBuilderPretty)]
+pub struct MessageBuilder<#[stated] S> {
+    recipients: Vec<String>,
+    body: String,
+}
+
+#[stated(import = MessageBuilderPretty)]
+impl<#[stated] S> MessageBuilder<S> {
+    #[stated]
+    pub fn new() -> MessageBuilder<_> {
+        MessageBuilder {
+            recipients: Vec::new(),
+            body: String::new(),
+        }
+    }
+
+    #[stated(assign(HasRecipient))]
+    pub fn recipient(mut self, recipient: impl Into<String>) -> MessageBuilder<_> {
+        self.recipients.push(recipient.into());
+        _
+    }
+
+    #[stated(reject(HasBody), assign(HasBody))]
+    pub fn body(mut self, body: impl Into<String>) -> Result<MessageBuilder<_>, &'static str> {
+        let body = body.into();
+        if !body.is_ascii() {
+            return Err("Body contains non-ASCII characters");
+        }
+
+        self.body = body;
+        Ok(_)
+    }
+
+    #[stated(assert(HasRecipient))]
+    pub fn build(self) -> Message {
+        let to = self.recipients.join(" & ");
+        let mut body = self.body;
+
+        if body.is_empty() {
+            body.push_str("<empty body>");
+        }
+
+        format!("To: {to}\n{body}")
+    }
+}
+
+#[allow(dead_code)]
+fn main() -> Result<(), &'static str> {
+    let message = MessageBuilder::new()
+        .recipient("Bob")
+        .recipient("Rob")
+        .body("Hello, World!")?
+        .build();
+
+    println!("{message}");
+
+    Ok(())
+}
