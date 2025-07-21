@@ -1,0 +1,11 @@
+[workspace]
+resolver = "2"
+members = [
+    "stated",
+    "stated-macros",
+
+    "examples",
+]
+
+[workspace.dependencies]
+stated = { path = "stated" }

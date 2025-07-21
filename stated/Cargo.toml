@@ -1,0 +1,22 @@
+[package]
+name = "stated"
+version = "0.1.0"
+edition = "2024"
+authors = ["Michael Ni <michael.ni678@gmail.com>"]
+repository = "https://github.com/michaelni678/stated"
+homepage = "https://github.com/michaelni678/stated"
+readme = "README.md"
+license = "Apache-2.0"
+keywords = ["typestate"]
+description = "Typestate pattern, made simple"
+documentation = "https://docs.rs/stated"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[features]
+guide = []
+
+[dependencies]
+stated-macros = { path = "../stated-macros", version = "0.1.0" }
