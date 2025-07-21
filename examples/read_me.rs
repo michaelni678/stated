@@ -2,8 +2,10 @@
 
 use stated::stated;
 
+/// A message, built with a [`MessageBuilder`].
 pub type Message = String;
 
+/// Builds a [`Message`].
 #[stated(states(HasRecipient, HasBody))]
 pub struct MessageBuilder<#[stated] S> {
     recipients: Vec<String>,
@@ -12,6 +14,7 @@ pub struct MessageBuilder<#[stated] S> {
 
 #[stated]
 impl<#[stated] S> MessageBuilder<S> {
+    /// Create a new message builder.
     #[stated]
     pub fn new() -> MessageBuilder<_> {
         MessageBuilder {
@@ -20,12 +23,14 @@ impl<#[stated] S> MessageBuilder<S> {
         }
     }
 
+    /// Add a recipient to the message.
     #[stated(assign(HasRecipient))]
     pub fn recipient(mut self, recipient: impl Into<String>) -> MessageBuilder<_> {
         self.recipients.push(recipient.into());
         _
     }
 
+    /// Set the body of the message.
     #[stated(reject(HasBody), assign(HasBody))]
     pub fn body(mut self, body: impl Into<String>) -> Result<MessageBuilder<_>, &'static str> {
         let body = body.into();
@@ -37,6 +42,7 @@ impl<#[stated] S> MessageBuilder<S> {
         Ok(_)
     }
 
+    /// Build the [`Message`].
     #[stated(assert(HasRecipient))]
     pub fn build(self) -> Message {
         let to = self.recipients.join(" & ");
