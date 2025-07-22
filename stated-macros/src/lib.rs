@@ -12,6 +12,8 @@ use crate::expand::{
 };
 
 mod expand;
+mod extensions;
+mod utilities;
 
 #[proc_macro_attribute]
 pub fn stated(args: TokenStream, input: TokenStream) -> TokenStream {
