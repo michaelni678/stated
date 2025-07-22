@@ -1,10 +1,10 @@
 use proc_macro2::TokenStream as TokenStream2;
 use quote::format_ident;
-use syn::{ItemImpl, ItemStruct, Macro, Meta, Result, Token, punctuated::Punctuated};
+use syn::{ItemImpl, ItemStruct, Meta, Result, Token, punctuated::Punctuated};
 
 use crate::{
-    extensions::ty::TypeExt,
-    utilities::squote::{parse_squote, squote},
+    extensions::ty::{TypeExt, TypePathExt},
+    utilities::squote::squote,
 };
 
 pub fn expand_item_struct(
@@ -33,10 +33,13 @@ pub fn expand_item_struct(
 }
 
 pub fn expand_item_impl(item_impl: ItemImpl) -> Result<TokenStream2> {
-    let mut mac: Macro = parse_squote!(__!(#item_impl));
-    mac.path = item_impl.self_ty.require_path()?.path.clone();
+    // Expect a macro at the impl type path with the same name.
+    let mut macro_path = item_impl.self_ty.require_path()?.clone();
+
+    // Strip the generic arguments from the macro path.
+    macro_path.strip_generics();
 
     Ok(squote! {
-        #mac;
+        #macro_path!(#item_impl);
     })
 }
