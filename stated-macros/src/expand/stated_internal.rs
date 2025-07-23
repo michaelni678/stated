@@ -3,14 +3,25 @@ use std::mem;
 use itertools::Itertools;
 use proc_macro2::TokenStream as TokenStream2;
 use syn::{
-    Error, Fields, FieldsNamed, FieldsUnnamed, ItemImpl, ItemStruct, Meta, Result, Token, Type,
-    punctuated::Punctuated, spanned::Spanned,
+    Error, Expr, ExprCall, ExprPath, ExprStruct, Fields, FieldsNamed, FieldsUnnamed, ItemImpl,
+    ItemStruct, Meta, MetaList, Path, Result, Token, Type,
+    parse::Parser,
+    punctuated::Punctuated,
+    spanned::Spanned,
+    visit_mut::{
+        VisitMut, visit_expr_call_mut, visit_expr_mut, visit_expr_struct_mut, visit_type_mut,
+    },
 };
 
 use crate::{
-    extensions::{generics::GenericParamExt, item::ImplItemExt},
+    extensions::{
+        generics::{GenericParamExt, PathArgumentsExt},
+        item::ImplItemExt,
+        punctuated::PunctuatedExt,
+        ty::{TypeExt, TypePathExt},
+    },
     utilities::{
-        designated::get_designated_indices,
+        designated::{find_designated_arg, get_designated_indices},
         squote::{parse_squote, squote},
         stateset::Stateset,
     },
@@ -19,7 +30,6 @@ use crate::{
 pub fn expand_item_struct_internal(mut item_struct: ItemStruct) -> Result<TokenStream2> {
     let (designated_param_index, designating_attr_index) =
         get_designated_indices(&item_struct.generics.params)?;
-
     let designated_param =
         item_struct.generics.params[designated_param_index].require_type_param_mut()?;
 
@@ -72,6 +82,15 @@ pub fn expand_item_impl_internal(
     metas: Punctuated<Meta, Token![,]>,
     mut item_impl: ItemImpl,
 ) -> Result<TokenStream2> {
+    let (designated_param_index, designating_attr_index) =
+        get_designated_indices(&item_impl.generics.params)?;
+    let designated_param =
+        item_impl.generics.params[designated_param_index].require_type_param_mut()?;
+    let designated_param_ident = designated_param.ident.clone();
+
+    // Remove the designating attribute from the designated parameter.
+    designated_param.attrs.remove(designating_attr_index);
+
     // Validate the implementation isn't for a trait.
     if let Some((_, trait_, _)) = item_impl.trait_.as_ref() {
         return Err(Error::new(trait_.span(), "trait impls are not supported"));
@@ -106,6 +125,7 @@ pub fn expand_item_impl_internal(
             "preset state is not a declared state",
         ));
     }
+    let mut expansions = Vec::new();
 
     // Take the impl items temporarily and loop through them.
     for mut impl_item in mem::take(&mut item_impl.items) {
@@ -119,7 +139,321 @@ pub fn expand_item_impl_internal(
         if ruleset_attrs.is_empty() {
             return Err(Error::new(associated_fn.span(), "no ruleset is specified"));
         }
+
+        for ruleset_attr in ruleset_attrs {
+            let mut ruleset = Stateset::default()
+                .support("assert")
+                .support("reject")
+                .support("assign")
+                .support("delete");
+
+            match ruleset_attr.meta {
+                Meta::Path(_) => {}
+                Meta::List(MetaList { tokens, .. }) => {
+                    let metas = Punctuated::<Meta, Token![,]>::parse_terminated.parse2(tokens)?;
+
+                    ruleset.extend_with_metas(&metas)?;
+                }
+                other => {
+                    return Err(Error::new(
+                        other.span(),
+                        "expected a list of states or nothing",
+                    ));
+                }
+            }
+
+            // Validate the asserted states contain no duplicates.
+            if let Some(state) = ruleset["assert"].iter().duplicates().next() {
+                return Err(Error::new(state.span(), "state is already asserted"));
+            }
+
+            // Validate the rejected states contain no duplicates.
+            if let Some(state) = ruleset["reject"].iter().duplicates().next() {
+                return Err(Error::new(state.span(), "state is already rejected"));
+            }
+
+            // Validate the assigned states contain no duplicates.
+            if let Some(state) = ruleset["assign"].iter().duplicates().next() {
+                return Err(Error::new(state.span(), "state is already assigned"));
+            }
+
+            // Validate the deleted states contain no duplicates.
+            if let Some(state) = ruleset["delete"].iter().duplicates().next() {
+                return Err(Error::new(state.span(), "state is already deleted"));
+            }
+
+            // Validate the asserted states are declared.
+            if let Some(state) = ruleset["assert"]
+                .iter()
+                .find(|state| !stateset["states"].contains(state))
+            {
+                return Err(Error::new(state.span(), "asserted state is not declared"));
+            }
+
+            // Validate the rejected states are declared.
+            if let Some(state) = ruleset["reject"]
+                .iter()
+                .find(|state| !stateset["states"].contains(state))
+            {
+                return Err(Error::new(state.span(), "rejected state is not declared"));
+            }
+
+            // Validate the asserted states are declared.
+            if let Some(state) = ruleset["assign"]
+                .iter()
+                .find(|state| !stateset["states"].contains(state))
+            {
+                return Err(Error::new(state.span(), "assigned state is not declared"));
+            }
+
+            // Validate the asserted states are declared.
+            if let Some(state) = ruleset["delete"]
+                .iter()
+                .find(|state| !stateset["states"].contains(state))
+            {
+                return Err(Error::new(state.span(), "deleted state is not declared"));
+            }
+
+            // Validate the asserted and rejected states are disjoint.
+            if let Some(state) = ruleset["reject"]
+                .iter()
+                .find(|state| ruleset["assert"].contains(state))
+            {
+                return Err(Error::new(
+                    state.span(),
+                    "rejected state cannot also be asserted",
+                ));
+            }
+
+            // Validate the assigned and deleted states are disjoint.
+            if let Some(state) = ruleset["delete"]
+                .iter()
+                .find(|state| ruleset["assign"].contains(state))
+            {
+                return Err(Error::new(
+                    state.span(),
+                    "deleted state cannot also be assigned",
+                ));
+            }
+
+            // Validate the asserted and assigned states are disjoint.
+            if let Some(state) = ruleset["assign"]
+                .iter()
+                .find(|state| ruleset["assert"].contains(state))
+            {
+                // TODO: Emit a warning once that feature is stabilized.
+                return Err(Error::new(
+                    state.span(),
+                    "assigned state doesn't need to be asserted",
+                ));
+            }
+
+            // Validate the rejected and deleted states are disjoint.
+            if let Some(state) = ruleset["delete"]
+                .iter()
+                .find(|state| ruleset["reject"].contains(state))
+            {
+                // TODO: Emit a warning once that feature is stabilized.
+                return Err(Error::new(
+                    state.span(),
+                    "deleted state doesn't need to be rejected",
+                ));
+            }
+
+            // Clone the impl block, which has no items at the moment. Each expanded
+            // function will be put in its own block, since they may have impl generics.
+            let mut item_impl = item_impl.clone();
+            let mut impl_item = impl_item.clone();
+            let associated_fn = impl_item.require_fn_mut()?;
+
+            let item_impl_ty = item_impl.self_ty.require_path_mut()?;
+
+            let args = &mut item_impl_ty
+                .last_mut()?
+                .arguments
+                .require_angle_bracketed_mut()?
+                .args;
+
+            let designated_arg_index = find_designated_arg(args, &designated_param_ident)?;
+
+            let has_receiver = associated_fn.sig.receiver().is_some();
+
+            struct ReplaceInferInReturnType(Type);
+
+            impl VisitMut for ReplaceInferInReturnType {
+                fn visit_type_mut(&mut self, ty: &mut Type) {
+                    let Type::Infer(_) = ty else {
+                        visit_type_mut(self, ty);
+                        return;
+                    };
+
+                    *ty = self.0.clone();
+                }
+            }
+
+            if has_receiver {
+                let replace_with = stateset["states"]
+                    .iter()
+                    .filter(|state| !ruleset["assert"].contains(state))
+                    .filter(|state| !ruleset["reject"].contains(state))
+                    .map(|state| parse_squote!(#state));
+
+                item_impl.generics.params.call(|params| {
+                    params.splice(
+                        designated_param_index..(designated_param_index + 1),
+                        replace_with,
+                    );
+                });
+
+                let states_in_ty = stateset["states"].iter().map(|state| -> Type {
+                    if ruleset["assert"].contains(state) {
+                        parse_squote!(::stated::Y)
+                    } else if ruleset["reject"].contains(state) {
+                        parse_squote!(::stated::N)
+                    } else {
+                        parse_squote!(#state)
+                    }
+                });
+
+                // Replace the designated argument with the states-in type.
+                args[designated_arg_index] = parse_squote!((#(#states_in_ty),*));
+
+                let states_out_ty = stateset["states"].iter().map(|state| -> Type {
+                    if ruleset["assign"].contains(state) {
+                        parse_squote!(::stated::Y)
+                    } else if ruleset["delete"].contains(state) {
+                        parse_squote!(::stated::N)
+                    } else if ruleset["assert"].contains(state) {
+                        parse_squote!(::stated::Y)
+                    } else if ruleset["reject"].contains(state) {
+                        parse_squote!(::stated::N)
+                    } else {
+                        parse_squote!(#state)
+                    }
+                });
+
+                // Replace `_` in the return type with the states-out type.
+                ReplaceInferInReturnType(parse_squote!((#(#states_out_ty),*)))
+                    .visit_return_type_mut(&mut associated_fn.sig.output);
+
+                struct ReplaceInferInBlock;
+
+                impl VisitMut for ReplaceInferInBlock {
+                    fn visit_expr_mut(&mut self, expr: &mut Expr) {
+                        let Expr::Infer(_) = expr else {
+                            visit_expr_mut(self, expr);
+                            return;
+                        };
+
+                        *expr = parse_squote!(@expr.span()=> self.__reconstruct());
+                    }
+                }
+
+                ReplaceInferInBlock.visit_block_mut(&mut associated_fn.block);
+            } else {
+                // Replace the designated argument with the stateless type.
+                args[designated_arg_index] = parse_squote!(::stated::__);
+
+                // Remove the designated parameter.
+                item_impl
+                    .generics
+                    .params
+                    .call(|params| params.remove(designated_param_index));
+
+                let states_out_ty = stateset["states"].iter().map(|state| -> Type {
+                    if ruleset["assign"].contains(state) {
+                        parse_squote!(::stated::Y)
+                    } else if ruleset["delete"].contains(state) {
+                        parse_squote!(::stated::N)
+                    } else if ruleset["assert"].contains(state) {
+                        parse_squote!(::stated::Y)
+                    } else if ruleset["reject"].contains(state) {
+                        parse_squote!(::stated::N)
+                    } else if stateset["preset"].contains(state) {
+                        parse_squote!(::stated::Y)
+                    } else {
+                        parse_squote!(::stated::N)
+                    }
+                });
+
+                // Replace `_` in the return type with the states-out type.
+                ReplaceInferInReturnType(parse_squote!((#(#states_out_ty),*)))
+                    .visit_return_type_mut(&mut associated_fn.sig.output);
+            }
+
+            struct ModifyStructConstructionInBlock<'a>(&'a Path);
+
+            impl ModifyStructConstructionInBlock<'_> {
+                fn should_modify(&self, other: &Path) -> bool {
+                    let other_idents = other.segments.iter().map(|seg| &seg.ident);
+
+                    self.0
+                        .segments
+                        .iter()
+                        .map(|seg| &seg.ident)
+                        .eq(other_idents)
+                }
+            }
+
+            impl VisitMut for ModifyStructConstructionInBlock<'_> {
+                fn visit_expr_mut(&mut self, expr: &mut Expr) {
+                    // Constructing a unit struct is considered a path expression. Since the
+                    // expression variant must be changed, capture it here.
+                    let Expr::Path(expr_path) = expr else {
+                        visit_expr_mut(self, expr);
+                        return;
+                    };
+
+                    // Check that the path of the struct being constructed is the impl type path.
+                    if !self.should_modify(&expr_path.path) {
+                        visit_expr_mut(self, expr);
+                        return;
+                    }
+
+                    *expr = parse_squote!(#expr_path(::std::marker::PhantomData));
+                }
+
+                // Constructing a tuple struct is considered a call expression.
+                fn visit_expr_call_mut(&mut self, expr_call: &mut ExprCall) {
+                    let ExprCall { func, args, .. } = expr_call;
+
+                    let Expr::Path(ExprPath { path, .. }) = func.as_ref() else {
+                        visit_expr_call_mut(self, expr_call);
+                        return;
+                    };
+
+                    // Check that the path of the struct being constructed is the impl type path.
+                    if !self.should_modify(path) {
+                        visit_expr_call_mut(self, expr_call);
+                        return;
+                    }
+
+                    // Add an argument to the tuple struct construction.
+                    args.push(parse_squote!(::std::marker::PhantomData));
+                }
+
+                fn visit_expr_struct_mut(&mut self, expr_struct: &mut ExprStruct) {
+                    let ExprStruct { path, fields, .. } = expr_struct;
+
+                    // Check that the path of the struct being constructed is the impl type path.
+                    if !self.should_modify(path) {
+                        visit_expr_struct_mut(self, expr_struct);
+                        return;
+                    }
+
+                    fields.push(parse_squote!(__states: ::std::marker::PhantomData));
+                }
+            }
+
+            ModifyStructConstructionInBlock(&item_impl_ty.path)
+                .visit_block_mut(&mut associated_fn.block);
+
+            item_impl.items.push(impl_item);
+            expansions.push(squote!(#item_impl));
+        }
     }
 
-    Ok(TokenStream2::new())
+    Ok(squote! {
+        #(#expansions)*
+    })
 }
