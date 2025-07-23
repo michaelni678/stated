@@ -28,7 +28,8 @@ pub fn get_designated_indices(
 
             // Set the index.
             if designating_attr_index.replace(attr_index).is_some() {
-                // TODO: Emit a warning once that feature is stabilized.
+                // TODO(blocked): Emit a warning once procedural macro diagnostics is
+                // stabilized. Tracking issue: https://github.com/rust-lang/rust/issues/54140.
                 return Err(Error::new(attr.span(), "parameter is already designated"));
             }
         }

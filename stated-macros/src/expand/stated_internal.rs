@@ -241,7 +241,8 @@ pub fn expand_item_impl_internal(
                 .iter()
                 .find(|state| ruleset["assert"].contains(state))
             {
-                // TODO: Emit a warning once that feature is stabilized.
+                // TODO(blocked): Emit a warning once procedural macro diagnostics is
+                // stabilized. Tracking issue: https://github.com/rust-lang/rust/issues/54140.
                 return Err(Error::new(
                     state.span(),
                     "assigned state doesn't need to be asserted",
@@ -253,7 +254,8 @@ pub fn expand_item_impl_internal(
                 .iter()
                 .find(|state| ruleset["reject"].contains(state))
             {
-                // TODO: Emit a warning once that feature is stabilized.
+                // TODO(blocked): Emit a warning once procedural macro diagnostics is
+                // stabilized. Tracking issue: https://github.com/rust-lang/rust/issues/54140.
                 return Err(Error::new(
                     state.span(),
                     "deleted state doesn't need to be rejected",
