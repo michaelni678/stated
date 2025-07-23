@@ -129,15 +129,14 @@ pub fn expand_item_impl_internal(
 
     // Take the impl items temporarily and loop through them.
     for mut impl_item in mem::take(&mut item_impl.items) {
-        let associated_fn = impl_item.require_fn_mut()?;
-
-        let ruleset_attrs = associated_fn
+        let ruleset_attrs = impl_item
+            .require_fn_mut()?
             .attrs
             .extract_if(.., |attr| attr.path().is_ident("stated"))
             .collect_vec();
 
         if ruleset_attrs.is_empty() {
-            return Err(Error::new(associated_fn.span(), "no ruleset is specified"));
+            return Err(Error::new(impl_item.span(), "no ruleset is specified"));
         }
 
         for ruleset_attr in ruleset_attrs {
@@ -262,8 +261,7 @@ pub fn expand_item_impl_internal(
                 ));
             }
 
-            // Clone the impl block, which has no items at the moment. Each expanded
-            // function will be put in its own block, since they may have impl generics.
+            // Clone the impl block. Each function will go in its own block due to differing generics.
             let mut item_impl = item_impl.clone();
             let mut impl_item = impl_item.clone();
             let associated_fn = impl_item.require_fn_mut()?;
