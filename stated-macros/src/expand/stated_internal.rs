@@ -82,6 +82,7 @@ pub fn expand_item_impl_internal(
     metas: Punctuated<Meta, Token![,]>,
     mut item_impl: ItemImpl,
 ) -> Result<TokenStream2> {
+    // Get the designated indices.
     let (designated_param_index, designating_attr_index) =
         get_designated_indices(&item_impl.generics.params)?;
     let designated_param =
@@ -125,6 +126,7 @@ pub fn expand_item_impl_internal(
             "preset state is not a declared state",
         ));
     }
+
     let mut expansions = Vec::new();
 
     // Take the impl items temporarily and loop through them.
