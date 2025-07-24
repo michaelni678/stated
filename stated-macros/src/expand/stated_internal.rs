@@ -279,8 +279,6 @@ pub fn expand_item_impl_internal(
 
             let designated_arg_index = find_designated_arg(args, &designated_param_ident)?;
 
-            let has_receiver = associated_fn.sig.receiver().is_some();
-
             struct ReplaceInferInReturnType(Type);
 
             impl VisitMut for ReplaceInferInReturnType {
@@ -294,7 +292,7 @@ pub fn expand_item_impl_internal(
                 }
             }
 
-            if has_receiver {
+            if associated_fn.sig.receiver().is_some() {
                 let replace_with = stateset["states"]
                     .iter()
                     .filter(|state| !ruleset["assert"].contains(state))
