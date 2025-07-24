@@ -261,7 +261,8 @@ pub fn expand_item_impl_internal(
                 ));
             }
 
-            // Clone the impl block. Each function will go in its own block due to differing generics.
+            // Clone the impl block. Each function will go in its own block due to differing
+            // generics.
             let mut item_impl = item_impl.clone();
             let mut impl_item = impl_item.clone();
             let associated_fn = impl_item.require_fn_mut()?;
