@@ -159,9 +159,11 @@ pub fn expand_item_impl_internal(
                 .support("assign")
                 .support("delete");
 
-            if let Meta::List(MetaList { tokens, .. }) = ruleset_attr.meta.forbid_name_value()? {
-                let metas =
-                    Punctuated::<Meta, Token![,]>::parse_terminated.parse2(tokens.clone())?;
+            // Validate the ruleset attribute is not a name-value.
+            ruleset_attr.meta.forbid_name_value()?;
+
+            if let Meta::List(MetaList { tokens, .. }) = ruleset_attr.meta {
+                let metas = Punctuated::<Meta, Token![,]>::parse_terminated.parse2(tokens)?;
 
                 // Validate all properties in the metas are supported.
                 if let Some(meta) = metas
