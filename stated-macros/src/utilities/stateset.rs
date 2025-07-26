@@ -23,27 +23,36 @@ impl Stateset {
 
     /// Extend the map with the given metas.
     ///
-    /// Panics if a property is not supported.
-    pub fn extend_with_metas<'a, M>(&mut self, metas: M) -> Result<()>
+    /// Returns `Ok(false)` if any of the properties are not supported.
+    pub fn extend_with_metas<'a, M>(&mut self, metas: M) -> Result<bool>
     where
         M: IntoIterator<Item = &'a Meta>,
     {
-        metas
-            .into_iter()
-            .try_for_each(|meta| self.extend_with_meta(meta))
+        let mut supported = true;
+
+        for meta in metas {
+            supported |= self.extend_with_meta(meta)?;
+        }
+
+        Ok(supported)
     }
 
     /// Extend the map with the given meta.
     ///
-    /// Panics if a property is not supported.
-    pub fn extend_with_meta(&mut self, meta: &Meta) -> Result<()> {
+    /// Returns `Ok(false)` if the property is not supported.
+    pub fn extend_with_meta(&mut self, meta: &Meta) -> Result<bool> {
         let property = meta.path().require_ident()?.to_string();
-        let states = self.0.get_mut(&property).expect("unsupported property");
+
+        let Some(states) = self.0.get_mut(&property) else {
+            return Ok(false);
+        };
 
         meta.require_list()?.parse_nested_meta(|meta| {
             let state = meta.path.require_ident().cloned()?;
             states.push(state);
             Ok(())
-        })
+        })?;
+
+        Ok(true)
     }
 }

@@ -28,7 +28,24 @@ use crate::{
     },
 };
 
-pub fn expand_item_struct_internal(mut item_struct: ItemStruct) -> Result<TokenStream2> {
+pub fn expand_item_struct_internal(
+    metas: Punctuated<Meta, Token![,]>,
+    mut item_struct: ItemStruct,
+) -> Result<TokenStream2> {
+    let mut stateset = Stateset::default().support("states").support("preset");
+
+    // Validate all properties in the metas are supported.
+    if let Some(meta) = metas
+        .iter()
+        .filter(|meta| !meta.path().is_ident("states"))
+        .filter(|meta| !meta.path().is_ident("preset"))
+        .next()
+    {
+        return Err(Error::new(meta.path().span(), "unsupported property"));
+    }
+
+    stateset.extend_with_metas(&metas)?;
+
     let (designated_param_index, designating_attr_index) =
         get_designated_indices(&item_struct.generics.params)?;
     let designated_param =
