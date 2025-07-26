@@ -1,6 +1,6 @@
 use std::{collections::HashMap, ops::Deref};
 
-use syn::{Error, Ident, Meta, Result, spanned::Spanned};
+use syn::{Ident, Meta, Result};
 
 /// A map of state properties to state identifiers.
 #[derive(Default, Clone)]
@@ -22,6 +22,8 @@ impl Stateset {
     }
 
     /// Extend the map with the given metas.
+    ///
+    /// Panics if a property is not supported.
     pub fn extend_with_metas<'a, M>(&mut self, metas: M) -> Result<()>
     where
         M: IntoIterator<Item = &'a Meta>,
@@ -32,16 +34,11 @@ impl Stateset {
     }
 
     /// Extend the map with the given meta.
+    ///
+    /// Panics if a property is not supported.
     pub fn extend_with_meta(&mut self, meta: &Meta) -> Result<()> {
-        let Some(property) = meta.path().get_ident() else {
-            return Err(Error::new(meta.path().span(), "unsupported property"));
-        };
-
-        let property = property.to_string();
-
-        let Some(states) = self.0.get_mut(&property) else {
-            return Err(Error::new(meta.path().span(), "unsupported property"));
-        };
+        let property = meta.path().require_ident()?.to_string();
+        let states = self.0.get_mut(&property).expect("unsupported property");
 
         meta.require_list()?.parse_nested_meta(|meta| {
             let state = meta.path.require_ident().cloned()?;

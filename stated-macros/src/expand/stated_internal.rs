@@ -17,6 +17,7 @@ use crate::{
     extensions::{
         generics::{GenericParamExt, PathArgumentsExt},
         item::ImplItemExt,
+        meta::MetaExt,
         punctuated::PunctuatedExt,
         ty::{TypeExt, TypePathExt},
     },
@@ -82,22 +83,22 @@ pub fn expand_item_impl_internal(
     metas: Punctuated<Meta, Token![,]>,
     mut item_impl: ItemImpl,
 ) -> Result<TokenStream2> {
-    // Get the designated indices.
-    let (designated_param_index, designating_attr_index) =
-        get_designated_indices(&item_impl.generics.params)?;
-    let designated_param =
-        item_impl.generics.params[designated_param_index].require_type_param_mut()?;
-    let designated_param_ident = designated_param.ident.clone();
-
-    // Remove the designating attribute from the designated parameter.
-    designated_param.attrs.remove(designating_attr_index);
-
     // Validate the implementation isn't for a trait.
     if let Some((_, trait_, _)) = item_impl.trait_.as_ref() {
         return Err(Error::new(trait_.span(), "trait impls are not supported"));
     }
 
     let mut stateset = Stateset::default().support("states").support("preset");
+
+    // Validate all properties in the metas are supported.
+    if let Some(meta) = metas
+        .iter()
+        .filter(|meta| !meta.path().is_ident("states"))
+        .filter(|meta| !meta.path().is_ident("preset"))
+        .next()
+    {
+        return Err(Error::new(meta.path().span(), "unsupported property"));
+    }
 
     stateset.extend_with_metas(&metas)?;
 
@@ -127,6 +128,16 @@ pub fn expand_item_impl_internal(
         ));
     }
 
+    // Get the designated indices.
+    let (designated_param_index, designating_attr_index) =
+        get_designated_indices(&item_impl.generics.params)?;
+    let designated_param =
+        item_impl.generics.params[designated_param_index].require_type_param_mut()?;
+    let designated_param_ident = designated_param.ident.clone();
+
+    // Remove the designating attribute from the designated parameter.
+    designated_param.attrs.remove(designating_attr_index);
+
     let mut expansions = Vec::new();
 
     // Take the impl items temporarily and loop through them.
@@ -148,19 +159,23 @@ pub fn expand_item_impl_internal(
                 .support("assign")
                 .support("delete");
 
-            match ruleset_attr.meta {
-                Meta::Path(_) => {}
-                Meta::List(MetaList { tokens, .. }) => {
-                    let metas = Punctuated::<Meta, Token![,]>::parse_terminated.parse2(tokens)?;
+            if let Meta::List(MetaList { tokens, .. }) = ruleset_attr.meta.forbid_name_value()? {
+                let metas =
+                    Punctuated::<Meta, Token![,]>::parse_terminated.parse2(tokens.clone())?;
 
-                    ruleset.extend_with_metas(&metas)?;
+                // Validate all properties in the metas are supported.
+                if let Some(meta) = metas
+                    .iter()
+                    .filter(|meta| !meta.path().is_ident("assert"))
+                    .filter(|meta| !meta.path().is_ident("reject"))
+                    .filter(|meta| !meta.path().is_ident("assign"))
+                    .filter(|meta| !meta.path().is_ident("delete"))
+                    .next()
+                {
+                    return Err(Error::new(meta.path().span(), "unsupported property"));
                 }
-                other => {
-                    return Err(Error::new(
-                        other.span(),
-                        "expected a list of states or nothing",
-                    ));
-                }
+
+                ruleset.extend_with_metas(&metas)?;
             }
 
             // Validate the asserted states contain no duplicates.
