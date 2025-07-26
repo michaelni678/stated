@@ -412,7 +412,7 @@ macro_rules! squote {
         }
     };
 
-    // #{...}
+    // #{...}.
     (
         (output:
             [ $($accumulated:tt)* ]
