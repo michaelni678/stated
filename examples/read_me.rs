@@ -6,7 +6,7 @@ use stated::stated;
 pub type Message = String;
 
 /// Builds a [`Message`].
-#[stated(states(HasRecipient, HasBody))]
+#[stated(states(HasRecipient, HasBody), docs(description))]
 pub struct MessageBuilder<#[stated] S> {
     recipients: Vec<String>,
     body: String,

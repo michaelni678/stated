@@ -33,11 +33,6 @@ pub fn expand_item_struct_internal(
     metas: Punctuated<Meta, Token![,]>,
     mut item_struct: ItemStruct,
 ) -> Result<TokenStream2> {
-    let mut documentation = Documentation::default();
-    documentation.configure_with_metas(&metas)?;
-
-    let mut stateset = Stateset::default().support("states").support("preset");
-
     // Validate all attributes in the metas are supported.
     if let Some(meta) = metas
         .iter()
@@ -48,6 +43,10 @@ pub fn expand_item_struct_internal(
         return Err(Error::new(meta.path().span(), "invalid attribute"));
     }
 
+    let mut documentation = Documentation::default();
+    documentation.configure_with_metas(&metas)?;
+
+    let mut stateset = Stateset::default().support("states").support("preset");
     stateset.extend_with_metas(&metas)?;
 
     if documentation.description {
@@ -113,16 +112,6 @@ pub fn expand_item_impl_internal(
     metas: Punctuated<Meta, Token![,]>,
     mut item_impl: ItemImpl,
 ) -> Result<TokenStream2> {
-    let mut documentation = Documentation::default();
-    documentation.configure_with_metas(&metas)?;
-
-    // Validate the implementation isn't for a trait.
-    if let Some((_, trait_, _)) = item_impl.trait_.as_ref() {
-        return Err(Error::new(trait_.span(), "trait impls are not supported"));
-    }
-
-    let mut stateset = Stateset::default().support("states").support("preset");
-
     // Validate all attributes in the metas are supported.
     if let Some(meta) = metas
         .iter()
@@ -133,6 +122,15 @@ pub fn expand_item_impl_internal(
         return Err(Error::new(meta.path().span(), "invalid attribute"));
     }
 
+    // Validate the implementation isn't for a trait.
+    if let Some((_, trait_, _)) = item_impl.trait_.as_ref() {
+        return Err(Error::new(trait_.span(), "trait impls are not supported"));
+    }
+    
+    let mut documentation = Documentation::default();
+    documentation.configure_with_metas(&metas)?;
+
+    let mut stateset = Stateset::default().support("states").support("preset");
     stateset.extend_with_metas(&metas)?;
 
     // Validate at least one state was declared.
