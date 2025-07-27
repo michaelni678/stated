@@ -3,7 +3,7 @@ use syn::{Meta, Result};
 #[derive(Default)]
 pub struct Documentation {
     description: bool,
-    ugly: bool,
+    pub ugly: bool,
 }
 
 impl Documentation {

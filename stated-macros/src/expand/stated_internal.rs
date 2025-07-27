@@ -3,8 +3,8 @@ use std::mem;
 use itertools::Itertools;
 use proc_macro2::TokenStream as TokenStream2;
 use syn::{
-    Error, Expr, ExprCall, ExprPath, ExprStruct, Fields, FieldsNamed, FieldsUnnamed, ItemImpl,
-    ItemStruct, Meta, MetaList, Path, Result, Token, Type,
+    Error, Expr, ExprCall, ExprPath, ExprStruct, Fields, FieldsNamed, FieldsUnnamed, ImplItem,
+    ItemImpl, ItemStruct, Meta, MetaList, Path, Result, Token, Type,
     parse::Parser,
     punctuated::Punctuated,
     spanned::Spanned,
@@ -23,6 +23,7 @@ use crate::{
     },
     utilities::{
         designated::{find_designated_arg, get_designated_indices},
+        documentation::Documentation,
         squote::{parse_squote, squote},
         stateset::Stateset,
     },
@@ -32,6 +33,9 @@ pub fn expand_item_struct_internal(
     metas: Punctuated<Meta, Token![,]>,
     mut item_struct: ItemStruct,
 ) -> Result<TokenStream2> {
+    let mut documentation = Documentation::default();
+    documentation.configure_with_metas(&metas)?;
+
     let mut stateset = Stateset::default().support("states").support("preset");
 
     // Validate all attributes in the metas are supported.
@@ -100,6 +104,9 @@ pub fn expand_item_impl_internal(
     metas: Punctuated<Meta, Token![,]>,
     mut item_impl: ItemImpl,
 ) -> Result<TokenStream2> {
+    let mut documentation = Documentation::default();
+    documentation.configure_with_metas(&metas)?;
+
     // Validate the implementation isn't for a trait.
     if let Some((_, trait_, _)) = item_impl.trait_.as_ref() {
         return Err(Error::new(trait_.span(), "trait impls are not supported"));
@@ -155,10 +162,13 @@ pub fn expand_item_impl_internal(
     // Remove the designating attribute from the designated parameter.
     designated_param.attrs.remove(designating_attr_index);
 
+    let impl_items = mem::take(&mut item_impl.items);
+
+    let mut pretty_item_impl = item_impl.clone();
+
     let mut expansions = Vec::new();
 
-    // Take the impl items temporarily and loop through them.
-    for mut impl_item in mem::take(&mut item_impl.items) {
+    for mut impl_item in impl_items {
         let ruleset_attrs = impl_item
             .require_fn_mut()?
             .attrs
@@ -326,6 +336,18 @@ pub fn expand_item_impl_internal(
                 }
             }
 
+            if !documentation.ugly {
+                let mut pretty_associated_fn = associated_fn.clone();
+
+                ReplaceInferInReturnType(parse_squote!(#designated_param_ident))
+                    .visit_return_type_mut(&mut pretty_associated_fn.sig.output);
+                pretty_associated_fn.block = parse_squote!({ unreachable!() });
+
+                pretty_item_impl
+                    .items
+                    .push(ImplItem::Fn(pretty_associated_fn));
+            }
+
             if associated_fn.sig.receiver().is_some() {
                 let replace_with = stateset["states"]
                     .iter()
@@ -484,8 +506,23 @@ pub fn expand_item_impl_internal(
                 .visit_block_mut(&mut associated_fn.block);
 
             item_impl.items.push(impl_item);
-            expansions.push(squote!(#item_impl));
+
+            if documentation.ugly {
+                expansions.push(squote!(#item_impl));
+            } else {
+                expansions.push(squote! {
+                    #[cfg(not(doc))]
+                    #item_impl
+                });
+            }
         }
+    }
+
+    if !documentation.ugly {
+        expansions.push(squote! {
+            #[cfg(doc)]
+            #pretty_item_impl
+        });
     }
 
     Ok(squote! {
