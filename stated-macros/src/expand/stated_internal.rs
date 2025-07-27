@@ -319,6 +319,17 @@ pub fn expand_item_impl_internal(
             let mut impl_item = impl_item.clone();
             let associated_fn = impl_item.require_fn_mut()?;
 
+            if documentation.description {
+                associated_fn.attrs.push(
+                    Description::new(&ruleset)
+                        .line(DescriptionLine::new("assert").label("Assert"))
+                        .line(DescriptionLine::new("reject").label("Reject"))
+                        .line(DescriptionLine::new("assign").label("Assign"))
+                        .line(DescriptionLine::new("delete").label("Delete"))
+                        .generate(),
+                );
+            }
+
             let item_impl_ty = item_impl.self_ty.require_path_mut()?;
 
             let args = &mut item_impl_ty
