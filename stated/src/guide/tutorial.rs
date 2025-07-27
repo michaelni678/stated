@@ -136,8 +136,8 @@
 //! In the return type of an associated function, the inferred type (`_`) is
 //! replaced with the outgoing state type.
 //!
-//! In the body of a method, the inferred expression (`_`) reconstructs `self`
-//! with the outgoing state type.
+//! In the body of a method, the inferred expression (`_`)
+//! [reconstructs](#reconstruct-method) `self` with the outgoing state type.
 //!
 //! ### Example
 //!
@@ -169,7 +169,10 @@
 //! # */
 //! ```
 //!
-//! # Additional Information
+//! # Expansion Behavior
+//!
+//! Overview of the modifications and additions the Stated macro makes to your
+//! code behind the scenes.
 //!
 //! ## Phantom Field
 //!
@@ -203,3 +206,8 @@
 //! }
 //! # */
 //! ```
+//!
+//! ## Reconstruct Method
+//!
+//! Stated adds a private method to assist with transitioning states. This
+//! method replaces [inferred expressions](#infer) in the method body.
