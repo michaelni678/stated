@@ -36,17 +36,12 @@ pub fn stated(args: TokenStream, input: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn stated_internal(args: TokenStream, input: TokenStream) -> TokenStream {
+    let metas = parse_macro_input!(args with Punctuated<Meta, Token![,]>::parse_terminated);
     let item = parse_macro_input!(input as Item);
 
     let result = match item {
-        Item::Struct(item_struct) => {
-            parse_macro_input!(args as Nothing);
-            expand_item_struct_internal(item_struct)
-        }
-        Item::Impl(item_impl) => {
-            let metas = parse_macro_input!(args with Punctuated<Meta, Token![,]>::parse_terminated);
-            expand_item_impl_internal(metas, item_impl)
-        }
+        Item::Struct(item_struct) => expand_item_struct_internal(metas, item_struct),
+        Item::Impl(item_impl) => expand_item_impl_internal(metas, item_impl),
         other => Err(Error::new(other.span(), "expected a struct or impl")),
     };
 

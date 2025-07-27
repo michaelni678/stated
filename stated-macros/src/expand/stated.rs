@@ -15,7 +15,7 @@ pub fn expand_item_struct(
 
     Ok(squote! {
         // Re-emit the struct with the internal macro.
-        #[::stated::stated_internal]
+        #[::stated::stated_internal(#metas)]
         #item_struct
 
         #[doc(hidden)]

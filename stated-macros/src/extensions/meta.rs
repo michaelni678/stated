@@ -7,7 +7,7 @@ pub impl Meta {
     fn forbid_name_value(&self) -> Result<&Self> {
         match self {
             Self::NameValue(MetaNameValue { eq_token, .. }) => {
-                return Err(Error::new(eq_token.span(), "did not expect `=`"));
+                Err(Error::new(eq_token.span(), "did not expect `=`"))
             }
             _ => Ok(self),
         }

@@ -3,8 +3,8 @@ use std::mem;
 use itertools::Itertools;
 use proc_macro2::TokenStream as TokenStream2;
 use syn::{
-    Error, Expr, ExprCall, ExprPath, ExprStruct, Fields, FieldsNamed, FieldsUnnamed, ItemImpl,
-    ItemStruct, Meta, MetaList, Path, Result, Token, Type,
+    Error, Expr, ExprCall, ExprPath, ExprStruct, Fields, FieldsNamed, FieldsUnnamed, ImplItem,
+    ItemImpl, ItemStruct, Meta, MetaList, Path, Result, Token, Type,
     parse::Parser,
     punctuated::Punctuated,
     spanned::Spanned,
@@ -23,12 +23,41 @@ use crate::{
     },
     utilities::{
         designated::{find_designated_arg, get_designated_indices},
+        documentation::{Description, DescriptionLine, Documentation},
         squote::{parse_squote, squote},
         stateset::Stateset,
     },
 };
 
-pub fn expand_item_struct_internal(mut item_struct: ItemStruct) -> Result<TokenStream2> {
+pub fn expand_item_struct_internal(
+    metas: Punctuated<Meta, Token![,]>,
+    mut item_struct: ItemStruct,
+) -> Result<TokenStream2> {
+    // Validate all attributes in the metas are supported.
+    if let Some(meta) = metas
+        .iter()
+        .filter(|meta| !meta.path().is_ident("states"))
+        .filter(|meta| !meta.path().is_ident("preset"))
+        .find(|meta| !meta.path().is_ident("docs"))
+    {
+        return Err(Error::new(meta.path().span(), "invalid attribute"));
+    }
+
+    let mut documentation = Documentation::default();
+    documentation.configure_with_metas(&metas)?;
+
+    let mut stateset = Stateset::default().support("states").support("preset");
+    stateset.extend_with_metas(&metas)?;
+
+    if documentation.description {
+        item_struct.attrs.push(
+            Description::new(&stateset)
+                .line(DescriptionLine::new("states").label("States"))
+                .line(DescriptionLine::new("preset").label("Preset"))
+                .generate(),
+        );
+    }
+
     let (designated_param_index, designating_attr_index) =
         get_designated_indices(&item_struct.generics.params)?;
     let designated_param =
@@ -83,23 +112,25 @@ pub fn expand_item_impl_internal(
     metas: Punctuated<Meta, Token![,]>,
     mut item_impl: ItemImpl,
 ) -> Result<TokenStream2> {
+    // Validate all attributes in the metas are supported.
+    if let Some(meta) = metas
+        .iter()
+        .filter(|meta| !meta.path().is_ident("states"))
+        .filter(|meta| !meta.path().is_ident("preset"))
+        .find(|meta| !meta.path().is_ident("docs"))
+    {
+        return Err(Error::new(meta.path().span(), "invalid attribute"));
+    }
+
     // Validate the implementation isn't for a trait.
     if let Some((_, trait_, _)) = item_impl.trait_.as_ref() {
         return Err(Error::new(trait_.span(), "trait impls are not supported"));
     }
 
+    let mut documentation = Documentation::default();
+    documentation.configure_with_metas(&metas)?;
+
     let mut stateset = Stateset::default().support("states").support("preset");
-
-    // Validate all properties in the metas are supported.
-    if let Some(meta) = metas
-        .iter()
-        .filter(|meta| !meta.path().is_ident("states"))
-        .filter(|meta| !meta.path().is_ident("preset"))
-        .next()
-    {
-        return Err(Error::new(meta.path().span(), "unsupported property"));
-    }
-
     stateset.extend_with_metas(&metas)?;
 
     // Validate at least one state was declared.
@@ -138,10 +169,13 @@ pub fn expand_item_impl_internal(
     // Remove the designating attribute from the designated parameter.
     designated_param.attrs.remove(designating_attr_index);
 
+    let impl_items = mem::take(&mut item_impl.items);
+
+    let mut pretty_item_impl = item_impl.clone();
+
     let mut expansions = Vec::new();
 
-    // Take the impl items temporarily and loop through them.
-    for mut impl_item in mem::take(&mut item_impl.items) {
+    for mut impl_item in impl_items {
         let ruleset_attrs = impl_item
             .require_fn_mut()?
             .attrs
@@ -165,16 +199,15 @@ pub fn expand_item_impl_internal(
             if let Meta::List(MetaList { tokens, .. }) = ruleset_attr.meta {
                 let metas = Punctuated::<Meta, Token![,]>::parse_terminated.parse2(tokens)?;
 
-                // Validate all properties in the metas are supported.
+                // Validate all attributes in the metas are supported.
                 if let Some(meta) = metas
                     .iter()
                     .filter(|meta| !meta.path().is_ident("assert"))
                     .filter(|meta| !meta.path().is_ident("reject"))
                     .filter(|meta| !meta.path().is_ident("assign"))
-                    .filter(|meta| !meta.path().is_ident("delete"))
-                    .next()
+                    .find(|meta| !meta.path().is_ident("delete"))
                 {
-                    return Err(Error::new(meta.path().span(), "unsupported property"));
+                    return Err(Error::new(meta.path().span(), "invalid attribute"));
                 }
 
                 ruleset.extend_with_metas(&metas)?;
@@ -286,6 +319,17 @@ pub fn expand_item_impl_internal(
             let mut impl_item = impl_item.clone();
             let associated_fn = impl_item.require_fn_mut()?;
 
+            if documentation.description {
+                associated_fn.attrs.push(
+                    Description::new(&ruleset)
+                        .line(DescriptionLine::new("assert").label("Assert"))
+                        .line(DescriptionLine::new("reject").label("Reject"))
+                        .line(DescriptionLine::new("assign").label("Assign"))
+                        .line(DescriptionLine::new("delete").label("Delete"))
+                        .generate(),
+                );
+            }
+
             let item_impl_ty = item_impl.self_ty.require_path_mut()?;
 
             let args = &mut item_impl_ty
@@ -307,6 +351,18 @@ pub fn expand_item_impl_internal(
 
                     *ty = self.0.clone();
                 }
+            }
+
+            if !documentation.ugly {
+                let mut pretty_associated_fn = associated_fn.clone();
+
+                ReplaceInferInReturnType(parse_squote!(#designated_param_ident))
+                    .visit_return_type_mut(&mut pretty_associated_fn.sig.output);
+                pretty_associated_fn.block = parse_squote!({ unreachable!() });
+
+                pretty_item_impl
+                    .items
+                    .push(ImplItem::Fn(pretty_associated_fn));
             }
 
             if associated_fn.sig.receiver().is_some() {
@@ -467,8 +523,23 @@ pub fn expand_item_impl_internal(
                 .visit_block_mut(&mut associated_fn.block);
 
             item_impl.items.push(impl_item);
-            expansions.push(squote!(#item_impl));
+
+            if documentation.ugly {
+                expansions.push(squote!(#item_impl));
+            } else {
+                expansions.push(squote! {
+                    #[cfg(not(doc))]
+                    #item_impl
+                });
+            }
         }
+    }
+
+    if !documentation.ugly {
+        expansions.push(squote! {
+            #[cfg(doc)]
+            #pretty_item_impl
+        });
     }
 
     Ok(squote! {
