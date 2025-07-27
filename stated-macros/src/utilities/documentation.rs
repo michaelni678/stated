@@ -68,8 +68,7 @@ impl<'a> Description<'a> {
         self
     }
 
-    /// Generates the description. Panics if a required state attribute isn't
-    /// found.
+    /// Generates the description.
     pub fn generate(self) -> Attribute {
         // All descriptions start with a blank HTML comment. Rustdoc generates
         // a summary line for modules (https://github.com/rust-lang/rust/blob/eed187cfce988dd669b7d9161f324433e64358ee/src/librustdoc/html/render/print_item.rs#L500).
@@ -79,9 +78,12 @@ impl<'a> Description<'a> {
         let mut description = String::from("<!-- -->");
 
         for line in self.lines {
-            let states = self.stateset.get(&line.attribute).expect("invalid attribute");
+            let states = self
+                .stateset
+                .get(&line.kind)
+                .expect("unsupported state kind");
 
-            let label = line.label.unwrap_or(line.attribute);
+            let label = line.label.unwrap_or(line.kind);
             let states = states.iter().map(|state| state.to_string()).join(", ");
 
             // Don't write this line if there are no states to list.
@@ -89,7 +91,8 @@ impl<'a> Description<'a> {
                 continue;
             }
 
-            // NOTE: There are two spaces between the description and the newline for a markdown soft line break.
+            // NOTE: There are two spaces between the description and the newline for a
+            // markdown soft line break.
             description = format!("{description}  \n**{label}**: {states}");
         }
 
@@ -99,15 +102,15 @@ impl<'a> Description<'a> {
 
 /// A description line.
 pub struct DescriptionLine {
-    attribute: String,
+    kind: String,
     label: Option<String>,
 }
 
 impl DescriptionLine {
-    /// Create a new line.
-    pub fn new(attribute: impl Into<String>) -> Self {
+    /// Create a new line for the given state kind.
+    pub fn new(kind: impl Into<String>) -> Self {
         Self {
-            attribute: attribute.into(),
+            kind: kind.into(),
             label: None,
         }
     }
