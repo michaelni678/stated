@@ -168,3 +168,38 @@
 //! }
 //! # */
 //! ```
+//!
+//! # Additional Information
+//!
+//! ## Phantom Field
+//!
+//! Stated adds a [`PhantomData`](std::marker::PhantomData) field to your struct
+//! to track states. When instantiating the struct, Stated will fill this field
+//! for you.
+//!
+//! ### Examples
+//!
+//! In the code below, Stated secretly adds a phantom field to `Example`.
+//! Despite this, you don’t need to manually set the field inside the `new`
+//! function!
+//!
+//! ```
+//! # {} /*
+//! #[stated(...)]
+//! struct Example<#[stated] S> {
+//!     number: i32,
+//!     string: String,
+//! }
+//!
+//! #[stated]
+//! impl<#[stated] S> Example<S> {
+//!     #[stated]
+//!     fn new() -> Example<_> {
+//!         Example {
+//!             number: 0,
+//!             string: String::new(),
+//!         }
+//!     }
+//! }
+//! # */
+//! ```
