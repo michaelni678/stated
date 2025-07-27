@@ -43,6 +43,7 @@ pub fn expand_item_struct_internal(
         .iter()
         .filter(|meta| !meta.path().is_ident("states"))
         .filter(|meta| !meta.path().is_ident("preset"))
+        .filter(|meta| !meta.path().is_ident("docs"))
         .next()
     {
         return Err(Error::new(meta.path().span(), "invalid attribute"));
@@ -119,6 +120,7 @@ pub fn expand_item_impl_internal(
         .iter()
         .filter(|meta| !meta.path().is_ident("states"))
         .filter(|meta| !meta.path().is_ident("preset"))
+        .filter(|meta| !meta.path().is_ident("docs"))
         .next()
     {
         return Err(Error::new(meta.path().span(), "invalid attribute"));
