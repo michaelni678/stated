@@ -126,7 +126,7 @@ pub fn expand_item_impl_internal(
     if let Some((_, trait_, _)) = item_impl.trait_.as_ref() {
         return Err(Error::new(trait_.span(), "trait impls are not supported"));
     }
-    
+
     let mut documentation = Documentation::default();
     documentation.configure_with_metas(&metas)?;
 

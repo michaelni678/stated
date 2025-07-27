@@ -11,8 +11,8 @@ pub struct Documentation {
 }
 
 impl Documentation {
-    /// Configures the documentation with the given metas. Skips metas without
-    /// the `docs` attribute.
+    /// Configures the documentation with `metas`. Skips metas without the
+    /// `docs` attribute.
     pub fn configure_with_metas<'a, M>(&mut self, metas: M) -> Result<()>
     where
         M: IntoIterator<Item = &'a Meta>,
@@ -107,7 +107,7 @@ pub struct DescriptionLine {
 }
 
 impl DescriptionLine {
-    /// Create a new line for the given state kind.
+    /// Create a new line for the state kind `kind`.
     pub fn new(kind: impl Into<String>) -> Self {
         Self {
             kind: kind.into(),

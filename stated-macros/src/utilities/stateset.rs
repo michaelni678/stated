@@ -21,8 +21,8 @@ impl Stateset {
         self
     }
 
-    /// Extend the map with the given metas. Skips metas that have an state kind
-    /// that isn't supported.
+    /// Extend the map with `metas`. Skips metas that have an state kind that
+    /// isn't supported.
     pub fn extend_with_metas<'a, M>(&mut self, metas: M) -> Result<()>
     where
         M: IntoIterator<Item = &'a Meta>,
@@ -32,8 +32,8 @@ impl Stateset {
             .try_for_each(|meta| self.extend_with_meta(meta))
     }
 
-    /// Extend the map with the given meta. Skips the meta if it has a state
-    /// kind that isn't supported.
+    /// Extend the map with `meta`. Skips the meta if it has a state kind that
+    /// isn't supported.
     pub fn extend_with_meta(&mut self, meta: &Meta) -> Result<()> {
         let kind = meta.path().require_ident()?.to_string();
 
