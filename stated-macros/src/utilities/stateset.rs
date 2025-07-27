@@ -21,19 +21,21 @@ impl Stateset {
         self
     }
 
-    /// Extend the map with the given metas. 
-    /// 
-    /// Skips unsupported attributes.
+    /// Extend the map with the given metas.
+    ///
+    /// Skips metas that have an attribute that isn't supported.
     pub fn extend_with_metas<'a, M>(&mut self, metas: M) -> Result<()>
     where
         M: IntoIterator<Item = &'a Meta>,
     {
-        metas.into_iter().try_for_each(|meta| self.extend_with_meta(meta))
+        metas
+            .into_iter()
+            .try_for_each(|meta| self.extend_with_meta(meta))
     }
 
     /// Extend the map with the given meta.
     ///
-    /// Skips if the attribute is unsupported.
+    /// Skips meta if it has an attribute that isn't supported.
     pub fn extend_with_meta(&mut self, meta: &Meta) -> Result<()> {
         let attribute = meta.path().require_ident()?.to_string();
 
