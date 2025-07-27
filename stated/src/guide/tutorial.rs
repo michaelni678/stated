@@ -180,7 +180,7 @@
 //! to track states. When instantiating the struct, Stated will fill this field
 //! for you.
 //!
-//! ### Examples
+//! ### Example
 //!
 //! In the code below, Stated secretly adds a phantom field to `Example`.
 //! Despite this, you don’t need to manually set the field inside the `new`
@@ -211,3 +211,8 @@
 //!
 //! Stated adds a private method to assist with transitioning states. This
 //! method replaces [inferred expressions](#infer) in the method body.
+//!
+//! ## Token Export Macro
+//!
+//! Stated defines a private macro to export declared and preset states from the
+//! struct definition to the impl block.
