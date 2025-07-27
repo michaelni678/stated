@@ -1,4 +1,10 @@
-//! The example on the [README](https://github.com/michaelni678/stated/blob/main/README.md).
+//! The example on the [README](https://github.com/michaelni678/stated/blob/main/README.md) with ugly documentation.
+//!
+//! # Modifications
+//!
+//! The following changes were made from the original example:
+//!
+//! - The attribute `docs(ugly)` was added to the struct.
 
 use stated::stated;
 
@@ -6,7 +12,7 @@ use stated::stated;
 pub type Message = String;
 
 /// Builds a [`Message`].
-#[stated(states(HasRecipient, HasBody))]
+#[stated(states(HasRecipient, HasBody), docs(ugly))]
 pub struct MessageBuilder<#[stated] S> {
     recipients: Vec<String>,
     body: String,
@@ -54,17 +60,4 @@ impl<#[stated] S> MessageBuilder<S> {
 
         format!("To: {to}\n{body}")
     }
-}
-
-#[allow(dead_code)]
-fn main() -> Result<(), &'static str> {
-    let message = MessageBuilder::new()
-        .recipient("Bob")
-        .recipient("Rob")
-        .body("Hello, World!")?
-        .build();
-
-    println!("{message}");
-
-    Ok(())
 }
