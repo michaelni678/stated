@@ -23,7 +23,7 @@ use crate::{
     },
     utilities::{
         designated::{find_designated_arg, get_designated_indices},
-        documentation::Documentation,
+        documentation::{Description, DescriptionLine, Documentation},
         squote::{parse_squote, squote},
         stateset::Stateset,
     },
@@ -50,6 +50,15 @@ pub fn expand_item_struct_internal(
     }
 
     stateset.extend_with_metas(&metas)?;
+
+    if documentation.description {
+        item_struct.attrs.push(
+            Description::new(&stateset)
+                .line(DescriptionLine::new("states").label("States"))
+                .line(DescriptionLine::new("preset").label("Preset"))
+                .generate(),
+        );
+    }
 
     let (designated_param_index, designating_attr_index) =
         get_designated_indices(&item_struct.generics.params)?;
