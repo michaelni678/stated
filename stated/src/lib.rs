@@ -4,7 +4,10 @@
 
 extern crate self as stated;
 
-pub use stated_macros::{stated, stated_internal};
+pub use stated_macros::stated;
+
+#[doc(hidden)]
+pub use stated_macros::stated_internal;
 
 #[cfg(feature = "guide")]
 pub mod guide;
