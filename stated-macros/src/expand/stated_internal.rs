@@ -43,8 +43,7 @@ pub fn expand_item_struct_internal(
         .iter()
         .filter(|meta| !meta.path().is_ident("states"))
         .filter(|meta| !meta.path().is_ident("preset"))
-        .filter(|meta| !meta.path().is_ident("docs"))
-        .next()
+        .find(|meta| !meta.path().is_ident("docs"))
     {
         return Err(Error::new(meta.path().span(), "invalid attribute"));
     }
@@ -129,8 +128,7 @@ pub fn expand_item_impl_internal(
         .iter()
         .filter(|meta| !meta.path().is_ident("states"))
         .filter(|meta| !meta.path().is_ident("preset"))
-        .filter(|meta| !meta.path().is_ident("docs"))
-        .next()
+        .find(|meta| !meta.path().is_ident("docs"))
     {
         return Err(Error::new(meta.path().span(), "invalid attribute"));
     }
@@ -209,8 +207,7 @@ pub fn expand_item_impl_internal(
                     .filter(|meta| !meta.path().is_ident("assert"))
                     .filter(|meta| !meta.path().is_ident("reject"))
                     .filter(|meta| !meta.path().is_ident("assign"))
-                    .filter(|meta| !meta.path().is_ident("delete"))
-                    .next()
+                    .find(|meta| !meta.path().is_ident("delete"))
                 {
                     return Err(Error::new(meta.path().span(), "invalid attribute"));
                 }
