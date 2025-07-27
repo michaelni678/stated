@@ -34,14 +34,14 @@ pub fn expand_item_struct_internal(
 ) -> Result<TokenStream2> {
     let mut stateset = Stateset::default().support("states").support("preset");
 
-    // Validate all properties in the metas are supported.
+    // Validate all attributes in the metas are supported.
     if let Some(meta) = metas
         .iter()
         .filter(|meta| !meta.path().is_ident("states"))
         .filter(|meta| !meta.path().is_ident("preset"))
         .next()
     {
-        return Err(Error::new(meta.path().span(), "unsupported property"));
+        return Err(Error::new(meta.path().span(), "invalid attribute"));
     }
 
     stateset.extend_with_metas(&metas)?;
@@ -107,14 +107,14 @@ pub fn expand_item_impl_internal(
 
     let mut stateset = Stateset::default().support("states").support("preset");
 
-    // Validate all properties in the metas are supported.
+    // Validate all attributes in the metas are supported.
     if let Some(meta) = metas
         .iter()
         .filter(|meta| !meta.path().is_ident("states"))
         .filter(|meta| !meta.path().is_ident("preset"))
         .next()
     {
-        return Err(Error::new(meta.path().span(), "unsupported property"));
+        return Err(Error::new(meta.path().span(), "invalid attribute"));
     }
 
     stateset.extend_with_metas(&metas)?;
@@ -182,7 +182,7 @@ pub fn expand_item_impl_internal(
             if let Meta::List(MetaList { tokens, .. }) = ruleset_attr.meta {
                 let metas = Punctuated::<Meta, Token![,]>::parse_terminated.parse2(tokens)?;
 
-                // Validate all properties in the metas are supported.
+                // Validate all attributes in the metas are supported.
                 if let Some(meta) = metas
                     .iter()
                     .filter(|meta| !meta.path().is_ident("assert"))
@@ -191,7 +191,7 @@ pub fn expand_item_impl_internal(
                     .filter(|meta| !meta.path().is_ident("delete"))
                     .next()
                 {
-                    return Err(Error::new(meta.path().span(), "unsupported property"));
+                    return Err(Error::new(meta.path().span(), "invalid attribute"));
                 }
 
                 ruleset.extend_with_metas(&metas)?;
