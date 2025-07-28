@@ -216,6 +216,34 @@
 //! # */
 //! ```
 //!
+//! # Limitations
+//!
+//! The typestate pattern has several limitations, some of which Stated aims to
+//! address.
+//!
+//! ## Boilerplate
+//!
+//! The typestate pattern has a lot of boilerplate. The whole point of Stated is
+//! to solve this limitation!
+//!
+//! ## Bad Documentation
+//!
+//! Since the typestate pattern uses lots of generics, documentation can be
+//! nearly incomprehensible. Stated generates [cleaner but inaccurate
+//! documentation](#documentation).
+//!
+//! ## Worse Compile Times
+//!
+//! The typestate pattern uses a lot of generics, which increases compile time.
+//! Stated does not attempt to solve this limitation.
+//!
+//! ## Self Type
+//!
+//! The typestate pattern doesn't work well with `Self`. `Self` refers to the
+//! current type being implemented, but the generics of this type may be changed
+//! for the typestate pattern to work. Stated does not attempt to solve this
+//! limitation.
+//!
 //! # Expansion Behavior
 //!
 //! Overview of the modifications and additions the Stated macro makes to your
@@ -263,31 +291,3 @@
 //!
 //! Stated defines a private macro to export declared and preset states from the
 //! struct definition to the impl block.
-//!
-//! # Limitations
-//!
-//! The typestate pattern has several limitations, some of which Stated aims to
-//! address.
-//!
-//! ## Boilerplate
-//!
-//! The typestate pattern has a lot of boilerplate. The whole point of Stated is
-//! to solve this limitation!
-//!
-//! ## Bad Documentation
-//!
-//! Since the typestate pattern uses lots of generics, documentation can be
-//! nearly incomprehensible. Stated generates [cleaner but inaccurate
-//! documentation](#documentation).
-//!
-//! ## Worse Compile Times
-//!
-//! The typestate pattern uses a lot of generics, which increases compile time.
-//! Stated does not attempt to solve this limitation.
-//!
-//! ## Self Type
-//!
-//! The typestate pattern doesn't work well with `Self`. `Self` refers to the
-//! current type being implemented, but the generics of this type may be changed
-//! for the typestate pattern to work. Stated does not attempt to solve this
-//! limitation.
