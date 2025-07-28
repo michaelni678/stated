@@ -330,9 +330,9 @@ pub fn expand_item_impl_internal(
                 );
             }
 
-            let item_impl_ty = item_impl.self_ty.require_path_mut()?;
+            let item_impl_path = item_impl.self_ty.require_path_mut()?;
 
-            let args = &mut item_impl_ty
+            let args = &mut item_impl_path
                 .last_mut()?
                 .arguments
                 .require_angle_bracketed_mut()?
@@ -356,6 +356,7 @@ pub fn expand_item_impl_internal(
             if !documentation.ugly {
                 let mut pretty_associated_fn = associated_fn.clone();
 
+                // Replace `_` in the return type with the designated parameter's ident.
                 ReplaceInferInReturnType(parse_squote!(#designated_param_ident))
                     .visit_return_type_mut(&mut pretty_associated_fn.sig.output);
                 pretty_associated_fn.block = parse_squote!({ unreachable!() });
@@ -389,7 +390,7 @@ pub fn expand_item_impl_internal(
                     }
                 });
 
-                // Replace the designated argument with the states-in type.
+                // Replace the designated argument with the ingoing type.
                 args[designated_arg_index] = parse_squote!((#(#states_in_ty),*));
 
                 let states_out_ty = stateset["states"].iter().map(|state| -> Type {
@@ -406,7 +407,7 @@ pub fn expand_item_impl_internal(
                     }
                 });
 
-                // Replace `_` in the return type with the states-out type.
+                // Replace the designated argument with the outgoing type.
                 ReplaceInferInReturnType(parse_squote!((#(#states_out_ty),*)))
                     .visit_return_type_mut(&mut associated_fn.sig.output);
 
@@ -519,7 +520,7 @@ pub fn expand_item_impl_internal(
                 }
             }
 
-            ModifyStructConstructionInBlock(&item_impl_ty.path)
+            ModifyStructConstructionInBlock(&item_impl_path.path)
                 .visit_block_mut(&mut associated_fn.block);
 
             item_impl.items.push(impl_item);
