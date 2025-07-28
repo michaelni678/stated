@@ -171,7 +171,12 @@ pub fn expand_item_impl_internal(
 
     let impl_items = mem::take(&mut item_impl.items);
 
-    let mut pretty_item_impl = item_impl.clone();
+    // Rename the variable for clarity. This will act as a template when needed. It
+    // has no impl items and the designating attribute was removed, making it a
+    // completely valid impl block.
+    let item_impl_template = item_impl;
+
+    let mut pretty_item_impl = item_impl_template.clone();
 
     let mut expansions = Vec::new();
 
@@ -315,7 +320,7 @@ pub fn expand_item_impl_internal(
 
             // Clone the impl block. Each function will go in its own block due to differing
             // generics.
-            let mut item_impl = item_impl.clone();
+            let mut item_impl = item_impl_template.clone();
             let mut impl_item = impl_item.clone();
             let associated_fn = impl_item.require_fn_mut()?;
 
