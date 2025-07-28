@@ -169,6 +169,53 @@
 //! # */
 //! ```
 //!
+//! # Documentation
+//!
+//! Since the typestate pattern uses lots of generics, documentation can be
+//! nearly incomprehensible. Stated automatically generates cleaner
+//! documentation. However, this documentation is **inaccurate** as it hides all
+//! the generics Stated uses. This may be misleading!
+//!
+//! The documentation Stated generates for the example in the [README](https://github.com/michaelni678/stated/blob/main/README.md)
+//! can be found in the [examples::read_me module](super::examples::read_me).
+//!
+//! The generated documentation can be configured with documentation attributes.
+//!
+//! ## Description
+//!
+//! Stated can generate a description of the states on the struct definition and
+//! associated functions with the `description` documentation attribute.
+//!
+//! Documentation generated using the `description` documentation attribute can
+//! be found in the [examples::description
+//! module](super::examples::description).
+//!
+//! ### Example
+//!
+//! ```
+//! # {} /*
+//! #[stated(states(A, B, C), docs(description))]
+//! struct ...
+//! # */
+//! ```
+//!
+//! ## Ugly
+//!
+//! The `ugly` documentation attribute generates the actual documentation that
+//! makes the typestate pattern possible.
+//!
+//! Documentation generated using the `ugly` documentation attribute can be
+//! found in the [examples::ugly module](super::examples::ugly).
+//!
+//! ### Example
+//!
+//! ```
+//! # {} /*
+//! #[stated(states(A, B, C), docs(ugly))]
+//! struct ...
+//! # */
+//! ```
+//!
 //! # Expansion Behavior
 //!
 //! Overview of the modifications and additions the Stated macro makes to your
@@ -216,3 +263,31 @@
 //!
 //! Stated defines a private macro to export declared and preset states from the
 //! struct definition to the impl block.
+//!
+//! # Limitations
+//!
+//! The typestate pattern has several limitations, some of which Stated aims to
+//! address.
+//!
+//! ## Boilerplate
+//!
+//! The typestate pattern has a lot of boilerplate. The whole point of Stated is
+//! to solve this limitation!
+//!
+//! ## Bad Documentation
+//!
+//! Since the typestate pattern uses lots of generics, documentation can be
+//! nearly incomprehensible. Stated generates [cleaner but inaccurate
+//! documentation](#documentation).
+//!
+//! ## Worse Compile Times
+//!
+//! The typestate pattern uses a lot of generics, which increases compile time.
+//! Stated does not attempt to solve this limitation.
+//!
+//! ## Self Type
+//!
+//! The typestate pattern doesn't work well with `Self`. `Self` refers to the
+//! current type being implemented, but the generics of this type may be changed
+//! for the typestate pattern to work. Stated does not attempt to solve this
+//! limitation.

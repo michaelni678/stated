@@ -1,4 +1,4 @@
-//! The example on the [README](https://github.com/michaelni678/stated/blob/main/README.md).
+//! The example in the [README](https://github.com/michaelni678/stated/blob/main/README.md).
 
 use stated::stated;
 
