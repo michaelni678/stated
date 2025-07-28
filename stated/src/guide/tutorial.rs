@@ -174,7 +174,8 @@
 //! Since the typestate pattern uses lots of generics, documentation can be
 //! nearly incomprehensible. Stated automatically generates cleaner
 //! documentation. However, this documentation is **inaccurate** as it hides all
-//! the generics Stated uses. This may be misleading!
+//! the generics Stated uses. This may be misleading! See the [ugly](#ugly)
+//! attribute to opt out.
 //!
 //! The documentation Stated generates for the example in the [README](https://github.com/michaelni678/stated/blob/main/README.md)
 //! can be found in the [examples::read_me module](super::examples::read_me).
