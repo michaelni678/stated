@@ -141,7 +141,7 @@
 //!
 //! ### Example
 //!
-//! In the code below, the inferred type in `Example<_>` is replaced with the
+//! In the code below, the inferred type in `Example<T, _, V>` is replaced with the
 //! outgoing state type, and the inferred expression in the method body will
 //! return this modified return type.
 //!
