@@ -1,4 +1,4 @@
-//! The example on the [README](https://github.com/michaelni678/stated/blob/main/README.md) with a generated description.
+//! The example in the [README](https://github.com/michaelni678/stated/blob/main/README.md) with a generated description.
 //!
 //! # Modifications
 //!
