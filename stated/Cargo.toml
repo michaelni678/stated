@@ -13,7 +13,7 @@ documentation = "https://docs.rs/stated"
 
 [package.metadata.docs.rs]
 all-features = true
-rustdoc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs", "--sort-modules-by-appearance"]
 
 [features]
 guide = []
