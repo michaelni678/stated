@@ -1,1 +1,3 @@
-pub mod examples;
+//! Stated user guide.
+
+pub mod documentation;

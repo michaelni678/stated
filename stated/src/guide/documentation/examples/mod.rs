@@ -1,4 +1,4 @@
-//! Examples using Stated.
+//! Examples of generated documentation.
 
 // NOTE: This module is a symlink.
 pub mod read_me;
