@@ -1,7 +1,6 @@
 //! Stated user guide.
 
-// NOTE: In the guide, the order of the modules matter! When documentation is
-// generated, the order is kept unchanged with `--sort-modules-by-appearance`.
+// Sections:
 //
 // 1)
 pub mod tutorial;
