@@ -8,3 +8,5 @@ pub mod tutorial;
 pub mod documentation;
 // 3)
 pub mod limitations;
+// 4)
+pub mod expansion;
