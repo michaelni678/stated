@@ -1,8 +1,10 @@
-pub mod examples {
-    pub mod read_me;
+//! Stated user guide.
 
-    pub mod description;
-    pub mod ugly;
-}
-
+// Sections:
+//
+// 1)
 pub mod tutorial;
+// 2)
+pub mod documentation;
+// 3)
+pub mod limitations;
