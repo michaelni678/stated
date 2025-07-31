@@ -1,3 +1,5 @@
+#![allow(unused_variables)]
+
 //! Showcase of each documentation attribute.
 //!
 //! [`Default`] is generated with no documentation attributes.
@@ -37,7 +39,9 @@ macro_rules! define {
             $(#[doc = $comments])*
             #[stated]
             pub fn new() -> $name<_> {
-                $name {}
+                $name {
+                    whatever: (),
+                }
             }
 
             $(#[doc = $comments])*
