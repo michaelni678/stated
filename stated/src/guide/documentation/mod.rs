@@ -15,6 +15,11 @@
 //! Stated can generate a description of the states on the struct definition and
 //! associated functions with the `description` attribute.
 //!
+//! For libraries, it's often better to write your own documentation for state
+//! behavior, as Stated's generated descriptions may be unclear or unhelpful to
+//! users unfamiliar with Stated or the typestate pattern. Of course, you can
+//! always include both if you'd like.
+//!
 //! ## Ugly
 //!
 //! The `ugly` documentation attribute generates the actual documentation that
