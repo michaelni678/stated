@@ -83,6 +83,12 @@ impl<#[stated] S> MessageBuilder<S> {
         format!("To: {to}\n{body}")
     }
 }
+
+let message = MessageBuilder::new()
+    .recipient("Bob")
+    .recipient("Rob")
+    .body("Hello, World!")?
+    .build();
 ```
 
 See the [examples](/examples) directory for more!
