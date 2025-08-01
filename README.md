@@ -30,10 +30,7 @@ These constraints are enforced at compile time rather than runtime.
 ```rust
 use stated::stated;
 
-/// A message, built with a [`MessageBuilder`].
-pub type Message = String;
-
-/// Builds a [`Message`].
+/// Builds a message.
 #[stated(states(HasRecipient, HasBody))]
 pub struct MessageBuilder<#[stated] S> {
     recipients: Vec<String>,
@@ -70,9 +67,9 @@ impl<#[stated] S> MessageBuilder<S> {
         Ok(_)
     }
 
-    /// Build the [`Message`].
+    /// Build the message.
     #[stated(assert(HasRecipient))]
-    pub fn build(self) -> Message {
+    pub fn build(self) -> String {
         let to = self.recipients.join(" & ");
         let mut body = self.body;
 
