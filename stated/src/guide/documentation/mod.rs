@@ -8,7 +8,9 @@
 //!
 //! # Attributes
 //!
-//! Attributes can be added to modify the generated documentation.
+//! Attributes can be added to modify the generated documentation. You can see
+//! the documentation these attributes generate in the [examples::attributes
+//! module](examples::attributes).
 //!
 //! ## Description
 //!
