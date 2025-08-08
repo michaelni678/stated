@@ -96,3 +96,120 @@ impl VisitMut for ModifyStructConstructionInBlock<'_> {
         fields.push(parse_squote!(__states: ::std::marker::PhantomData));
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn replace_infer_in_return_type_unnested() {
+        let mut return_type = parse_squote!(-> _);
+
+        ReplaceInferInReturnType(parse_squote!(Dummy)).visit_return_type_mut(&mut return_type);
+
+        assert_eq!(return_type, parse_squote!(-> Dummy));
+    }
+
+    #[test]
+    fn replace_infer_in_return_type_nested() {
+        let mut return_type = parse_squote!(-> Returned<_>);
+
+        ReplaceInferInReturnType(parse_squote!(Dummy)).visit_return_type_mut(&mut return_type);
+
+        assert_eq!(return_type, parse_squote!(-> Returned<Dummy>));
+    }
+
+    #[test]
+    fn replace_infer_in_return_type_nested_multiple() {
+        let mut return_type = parse_squote!(-> Returned<_, (_, i64), Nest<_, String>>);
+
+        ReplaceInferInReturnType(parse_squote!(Dummy)).visit_return_type_mut(&mut return_type);
+
+        assert_eq!(
+            return_type,
+            parse_squote!(-> Returned<Dummy, (Dummy, i64), Nest<Dummy, String>>)
+        );
+    }
+
+    #[test]
+    fn replace_infer_in_block_end_unnested() {
+        let mut block = parse_squote! {{ _ }};
+
+        ReplaceInferInBlock(parse_squote!(Dummy)).visit_block_mut(&mut block);
+
+        assert_eq!(block, parse_squote! {{ Dummy }});
+    }
+
+    #[test]
+    fn replace_infer_in_block_end_nested() {
+        let mut block = parse_squote! {{ Ok(_) }};
+
+        ReplaceInferInBlock(parse_squote!(Dummy)).visit_block_mut(&mut block);
+
+        assert_eq!(block, parse_squote! {{ Ok(Dummy) }});
+    }
+
+    #[test]
+    fn replace_infer_in_block_not_end_unnested() {
+        let mut block = parse_squote! {{
+            let dummy = _;
+            dummy
+        }};
+
+        ReplaceInferInBlock(parse_squote!(Dummy)).visit_block_mut(&mut block);
+
+        assert_eq!(
+            block,
+            parse_squote! {{
+               let dummy = Dummy;
+               dummy
+            }}
+        );
+    }
+
+    #[test]
+    fn replace_infer_in_block_not_end_nested() {
+        let mut block = parse_squote! {{
+            let dummy = Ok(_);
+            dummy
+        }};
+
+        ReplaceInferInBlock(parse_squote!(Dummy)).visit_block_mut(&mut block);
+
+        assert_eq!(
+            block,
+            parse_squote! {{
+               let dummy = Ok(Dummy);
+               dummy
+            }}
+        );
+    }
+
+    #[test]
+    fn replace_infer_in_block_unrelated_infers() {
+        let mut block = parse_squote! {{
+            let _ = 5;
+            let v: Vec<_> = vec![];
+            match v {
+                _ => {},
+            }
+
+            return Ok(_);
+        }};
+
+        ReplaceInferInBlock(parse_squote!(Dummy)).visit_block_mut(&mut block);
+
+        assert_eq!(
+            block,
+            parse_squote! {{
+                let _ = 5;
+                let v: Vec<_> = vec![];
+                match v {
+                    _ => {},
+                }
+
+                return Ok(Dummy);
+            }}
+        );
+    }
+}
