@@ -1,6 +1,5 @@
 use syn::{
     Expr, ExprCall, ExprPath, ExprStruct, Path, Type,
-    spanned::Spanned,
     visit_mut::{
         VisitMut, visit_expr_call_mut, visit_expr_mut, visit_expr_struct_mut, visit_type_mut,
     },
@@ -21,7 +20,7 @@ impl VisitMut for ReplaceInferInReturnType {
     }
 }
 
-pub struct ReplaceInferInBlock;
+pub struct ReplaceInferInBlock(pub Expr);
 
 impl VisitMut for ReplaceInferInBlock {
     fn visit_expr_mut(&mut self, expr: &mut Expr) {
@@ -30,7 +29,7 @@ impl VisitMut for ReplaceInferInBlock {
             return;
         };
 
-        *expr = parse_squote!(@expr.span()=> self.__reconstruct());
+        *expr = self.0.clone();
     }
 }
 

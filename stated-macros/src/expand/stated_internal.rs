@@ -354,7 +354,9 @@ pub fn expand_item_impl_internal(
                     .push(ImplItem::Fn(pretty_associated_fn));
             }
 
-            if associated_fn.sig.receiver().is_some() {
+            if let Some(receiver) = associated_fn.sig.receiver() {
+                let receiver_span = receiver.span();
+
                 let replace_with = stateset["states"]
                     .iter()
                     .filter(|state| !ruleset["assert"].contains(state))
@@ -399,7 +401,8 @@ pub fn expand_item_impl_internal(
                 ReplaceInferInReturnType(parse_squote!((#(#states_out_ty),*)))
                     .visit_return_type_mut(&mut associated_fn.sig.output);
 
-                ReplaceInferInBlock.visit_block_mut(&mut associated_fn.block);
+                ReplaceInferInBlock(parse_squote!(@receiver_span=> self.__reconstruct()))
+                    .visit_block_mut(&mut associated_fn.block);
             } else {
                 // Replace the designated argument with the stateless type.
                 args[designated_arg_index] = parse_squote!(::stated::__);
