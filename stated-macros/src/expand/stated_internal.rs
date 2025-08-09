@@ -22,8 +22,7 @@ use crate::{
         squote::{parse_squote, squote},
         stateset::Stateset,
         visit::{
-            AddPhantomFieldInStructConstructionInBlock, ReplaceInferInBlock,
-            ReplaceInferInReturnType,
+            AddFieldInStructConstructionInBlock, ReplaceInferInBlock, ReplaceInferInReturnType,
         },
     },
 };
@@ -437,8 +436,12 @@ pub fn expand_item_impl_internal(
                     .visit_return_type_mut(&mut associated_fn.sig.output);
             }
 
-            AddPhantomFieldInStructConstructionInBlock(&item_impl_path.path)
-                .visit_block_mut(&mut associated_fn.block);
+            AddFieldInStructConstructionInBlock {
+                path: &item_impl_path.path,
+                field_member: parse_squote!(__states),
+                field_type: parse_squote!(::std::marker::PhantomData),
+            }
+            .visit_block_mut(&mut associated_fn.block);
 
             item_impl.items.push(impl_item);
 

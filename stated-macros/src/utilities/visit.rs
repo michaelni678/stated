@@ -1,5 +1,5 @@
 use syn::{
-    Expr, ExprCall, ExprPath, ExprStruct, Path, Type,
+    Expr, ExprCall, ExprPath, ExprStruct, Member, Path, Type,
     visit_mut::{
         VisitMut, visit_expr_call_mut, visit_expr_mut, visit_expr_struct_mut, visit_type_mut,
     },
@@ -33,11 +33,15 @@ impl VisitMut for ReplaceInferInBlock {
     }
 }
 
-pub struct AddPhantomFieldInStructConstructionInBlock<'a>(pub &'a Path);
+pub struct AddFieldInStructConstructionInBlock<'a> {
+    pub path: &'a Path,
+    pub field_member: Member,
+    pub field_type: Type,
+}
 
-impl AddPhantomFieldInStructConstructionInBlock<'_> {
+impl AddFieldInStructConstructionInBlock<'_> {
     fn should_modify(&self, other: &Path) -> bool {
-        self.0
+        self.path
             .segments
             .iter()
             .map(|seg| &seg.ident)
@@ -45,7 +49,7 @@ impl AddPhantomFieldInStructConstructionInBlock<'_> {
     }
 }
 
-impl VisitMut for AddPhantomFieldInStructConstructionInBlock<'_> {
+impl VisitMut for AddFieldInStructConstructionInBlock<'_> {
     fn visit_expr_mut(&mut self, expr: &mut Expr) {
         // Constructing a unit struct is considered a path expression. Since the
         // expression variant must be changed, capture it here.
@@ -60,7 +64,7 @@ impl VisitMut for AddPhantomFieldInStructConstructionInBlock<'_> {
             return;
         }
 
-        *expr = parse_squote!(#expr_path(::std::marker::PhantomData));
+        *expr = parse_squote!(#expr_path(#{self.field_type}));
     }
 
     // Constructing a tuple struct is considered a call expression.
@@ -79,7 +83,7 @@ impl VisitMut for AddPhantomFieldInStructConstructionInBlock<'_> {
         }
 
         // Add an argument to the tuple struct construction.
-        args.push(parse_squote!(::std::marker::PhantomData));
+        args.push(parse_squote!(#{self.field_type}));
     }
 
     fn visit_expr_struct_mut(&mut self, expr_struct: &mut ExprStruct) {
@@ -91,7 +95,7 @@ impl VisitMut for AddPhantomFieldInStructConstructionInBlock<'_> {
             return;
         }
 
-        fields.push(parse_squote!(__states: ::std::marker::PhantomData));
+        fields.push(parse_squote!(#{self.field_member}: #{self.field_type}));
     }
 }
 
