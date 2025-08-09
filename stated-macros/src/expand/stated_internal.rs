@@ -21,9 +21,7 @@ use crate::{
         documentation::{Description, DescriptionLine, Documentation},
         squote::{parse_squote, squote},
         stateset::Stateset,
-        visit::{
-            AddFieldInStructConstruction, ReplaceExprInfer, ReplaceTypeInfer,
-        },
+        visit::{AddFieldInStructConstruction, ReplaceExprInfer, ReplaceTypeInfer},
     },
 };
 
@@ -439,7 +437,7 @@ pub fn expand_item_impl_internal(
             AddFieldInStructConstruction {
                 path: &item_impl_path.path,
                 field_member: parse_squote!(__states),
-                field_type: parse_squote!(::std::marker::PhantomData),
+                field_expr: parse_squote!(::std::marker::PhantomData),
             }
             .visit_block_mut(&mut associated_fn.block);
 

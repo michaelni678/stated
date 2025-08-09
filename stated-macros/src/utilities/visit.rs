@@ -36,7 +36,7 @@ impl VisitMut for ReplaceExprInfer {
 pub struct AddFieldInStructConstruction<'a> {
     pub path: &'a Path,
     pub field_member: Member,
-    pub field_type: Type,
+    pub field_expr: Expr,
 }
 
 impl AddFieldInStructConstruction<'_> {
@@ -64,7 +64,7 @@ impl VisitMut for AddFieldInStructConstruction<'_> {
             return;
         }
 
-        *expr = parse_squote!(#expr_path(#{self.field_type}));
+        *expr = parse_squote!(#expr_path(#{self.field_expr}));
     }
 
     // Constructing a tuple struct is considered a call expression.
@@ -83,7 +83,7 @@ impl VisitMut for AddFieldInStructConstruction<'_> {
         }
 
         // Add an argument to the tuple struct construction.
-        args.push(parse_squote!(#{self.field_type}));
+        args.push(self.field_expr.clone());
     }
 
     fn visit_expr_struct_mut(&mut self, expr_struct: &mut ExprStruct) {
@@ -95,7 +95,7 @@ impl VisitMut for AddFieldInStructConstruction<'_> {
             return;
         }
 
-        fields.push(parse_squote!(#{self.field_member}: #{self.field_type}));
+        fields.push(parse_squote!(#{self.field_member}: #{self.field_expr}));
     }
 }
 
@@ -107,91 +107,103 @@ mod tests {
     fn replace_type_infer_single_unnested() {
         let mut ty = parse_squote!(_);
 
-        ReplaceTypeInfer(parse_squote!(Replacement)).visit_type_mut(&mut ty);
+        ReplaceTypeInfer(parse_squote!(ReplacementType)).visit_type_mut(&mut ty);
 
-        assert_eq!(ty, parse_squote!(Replacement));
+        assert_eq!(ty, parse_squote!(ReplacementType));
     }
 
     #[test]
     fn replace_type_infer_single_nested() {
         let mut ty = parse_squote!(Wrapper<_>);
 
-        ReplaceTypeInfer(parse_squote!(Replacement)).visit_type_mut(&mut ty);
+        ReplaceTypeInfer(parse_squote!(ReplacementType)).visit_type_mut(&mut ty);
 
-        assert_eq!(ty, parse_squote!(Wrapper<Replacement>));
+        assert_eq!(ty, parse_squote!(Wrapper<ReplacementType>));
     }
 
     #[test]
     fn replace_type_infer_multiple_nested() {
         let mut ty = parse_squote!(Wrapper<_, (_, i64), InnerWrapper<_, String>>);
 
-        ReplaceTypeInfer(parse_squote!(Replacement)).visit_type_mut(&mut ty);
+        ReplaceTypeInfer(parse_squote!(ReplacementType)).visit_type_mut(&mut ty);
 
         assert_eq!(
             ty,
-            parse_squote!(Wrapper<Replacement, (Replacement, i64), InnerWrapper<Replacement, String>>)
-        );
-    }
-
-    #[test]
-    fn replace_expr_infer_last_single_unnested() {
-        let mut block = parse_squote! {{
-            _
-        }};
-
-        ReplaceExprInfer(parse_squote!(Replacement)).visit_block_mut(&mut block);
-
-        assert_eq!(block, parse_squote! {{ Replacement }});
-    }
-
-    #[test]
-    fn replace_expr_infer_last_single_nested() {
-        let mut block = parse_squote! {{
-            Ok(_)
-        }};
-
-        ReplaceExprInfer(parse_squote!(Replacement)).visit_block_mut(&mut block);
-
-        assert_eq!(
-            block,
-            parse_squote! {{
-                Ok(Replacement)
-            }}
+            parse_squote!(Wrapper<ReplacementType, (ReplacementType, i64), InnerWrapper<ReplacementType, String>>)
         );
     }
 
     #[test]
     fn replace_expr_infer_single_unnested() {
         let mut block = parse_squote! {{
-            let replacement = _;
-            replacement
+            _
         }};
 
-        ReplaceExprInfer(parse_squote!(Replacement)).visit_block_mut(&mut block);
+        ReplaceExprInfer(parse_squote!(replacement_expr())).visit_block_mut(&mut block);
 
-        assert_eq!(
-            block,
-            parse_squote! {{
-               let replacement = Replacement;
-               replacement
-            }}
-        );
+        assert_eq!(block, parse_squote! {{ replacement_expr() }});
     }
 
     #[test]
     fn replace_expr_infer_single_nested() {
         let mut block = parse_squote! {{
-            let replacement = Ok(_);
-            replacement
+            Ok(_)
         }};
 
-        ReplaceExprInfer(parse_squote!(Replacement)).visit_block_mut(&mut block);
+        ReplaceExprInfer(parse_squote!(replacement_expr())).visit_block_mut(&mut block);
 
         assert_eq!(
             block,
             parse_squote! {{
-               let replacement = Ok(Replacement);
-               replacement
+                Ok(replacement_expr())
+            }}
+        );
+    }
+
+    #[test]
+    fn replace_expr_infer_multiple_unnested() {
+        let mut block = parse_squote! {{
+            if true {
+                return _;
+            }
+
+            _
+        }};
+
+        ReplaceExprInfer(parse_squote!(replacement_expr())).visit_block_mut(&mut block);
+
+        assert_eq!(
+            block,
+            parse_squote! {{
+                if true {
+                    return replacement_expr();
+                }
+
+                replacement_expr()
+            }}
+        );
+    }
+
+    #[test]
+    fn replace_expr_infer_multiple_nested() {
+        let mut block = parse_squote! {{
+            if true {
+                return Ok(_);
+            }
+
+            Ok(_)
+        }};
+
+        ReplaceExprInfer(parse_squote!(replacement_expr())).visit_block_mut(&mut block);
+
+        assert_eq!(
+            block,
+            parse_squote! {{
+                if true {
+                    return Ok(replacement_expr());
+                }
+
+                Ok(replacement_expr())
             }}
         );
     }
@@ -208,7 +220,7 @@ mod tests {
             return Ok(_);
         }};
 
-        ReplaceExprInfer(parse_squote!(Replacement)).visit_block_mut(&mut block);
+        ReplaceExprInfer(parse_squote!(replacement_expr())).visit_block_mut(&mut block);
 
         assert_eq!(
             block,
@@ -219,7 +231,217 @@ mod tests {
                     _ => {},
                 }
 
-                return Ok(Replacement);
+                return Ok(replacement_expr());
+            }}
+        );
+    }
+
+    #[test]
+    fn add_field_in_struct_construction_unit_single_segment() {
+        let mut block = parse_squote! {{
+            Struct
+        }};
+
+        AddFieldInStructConstruction {
+            path: &parse_squote!(Struct),
+            field_member: parse_squote!(added_field_member),
+            field_expr: parse_squote!(added_field_expr()),
+        }
+        .visit_block_mut(&mut block);
+
+        assert_eq!(
+            block,
+            parse_squote! {{
+                Struct(added_field_expr())
+            }}
+        );
+    }
+
+    #[test]
+    fn add_field_in_struct_construction_unit_multiple_segments() {
+        let mut block = parse_squote! {{
+            a::b::Struct
+        }};
+
+        AddFieldInStructConstruction {
+            path: &parse_squote!(a::b::Struct),
+            field_member: parse_squote!(added_field_member),
+            field_expr: parse_squote!(added_field_expr()),
+        }
+        .visit_block_mut(&mut block);
+
+        assert_eq!(
+            block,
+            parse_squote! {{
+                a::b::Struct(added_field_expr())
+            }}
+        );
+    }
+
+    #[test]
+    fn add_field_in_struct_construction_unnamed_empty_single_segment() {
+        let mut block = parse_squote! {{
+            Struct()
+        }};
+
+        AddFieldInStructConstruction {
+            path: &parse_squote!(Struct),
+            field_member: parse_squote!(added_field_member),
+            field_expr: parse_squote!(added_field_expr()),
+        }
+        .visit_block_mut(&mut block);
+
+        assert_eq!(
+            block,
+            parse_squote! {{
+                Struct(added_field_expr())
+            }}
+        );
+    }
+
+    #[test]
+    fn add_field_in_struct_construction_unnamed_empty_multiple_segments() {
+        let mut block = parse_squote! {{
+            a::b::Struct()
+        }};
+
+        AddFieldInStructConstruction {
+            path: &parse_squote!(a::b::Struct),
+            field_member: parse_squote!(added_field_member),
+            field_expr: parse_squote!(added_field_expr()),
+        }
+        .visit_block_mut(&mut block);
+
+        assert_eq!(
+            block,
+            parse_squote! {{
+                a::b::Struct(added_field_expr())
+            }}
+        );
+    }
+
+    #[test]
+    fn add_field_in_struct_construction_unnamed_single_segment() {
+        let mut block = parse_squote! {{
+            Struct(some_variable, SomeExpr::new())
+        }};
+
+        AddFieldInStructConstruction {
+            path: &parse_squote!(Struct),
+            field_member: parse_squote!(added_field_member),
+            field_expr: parse_squote!(added_field_expr()),
+        }
+        .visit_block_mut(&mut block);
+
+        assert_eq!(
+            block,
+            parse_squote! {{
+                Struct(some_variable, SomeExpr::new(), added_field_expr())
+            }}
+        );
+    }
+
+    #[test]
+    fn add_field_in_struct_construction_unnamed_multiple_segments() {
+        let mut block = parse_squote! {{
+            a::b::Struct(some_variable, SomeExpr::new())
+        }};
+
+        AddFieldInStructConstruction {
+            path: &parse_squote!(a::b::Struct),
+            field_member: parse_squote!(added_field_member),
+            field_expr: parse_squote!(added_field_expr()),
+        }
+        .visit_block_mut(&mut block);
+
+        assert_eq!(
+            block,
+            parse_squote! {{
+                a::b::Struct(some_variable, SomeExpr::new(), added_field_expr())
+            }}
+        );
+    }
+
+    #[test]
+    fn add_field_in_struct_construction_named_single_segment() {
+        let mut block = parse_squote! {{
+            Struct {
+                some_variable,
+                some_variable2: SomeExpr::new(),
+            }
+        }};
+
+        AddFieldInStructConstruction {
+            path: &parse_squote!(Struct),
+            field_member: parse_squote!(added_field_member),
+            field_expr: parse_squote!(added_field_expr()),
+        }
+        .visit_block_mut(&mut block);
+
+        assert_eq!(
+            block,
+            parse_squote! {{
+                Struct {
+                    some_variable,
+                    some_variable2: SomeExpr::new(),
+                    added_field_member: added_field_expr()
+                }
+            }}
+        );
+    }
+
+    #[test]
+    fn add_field_in_struct_construction_named_multiple_segments() {
+        let mut block = parse_squote! {{
+            a::b::Struct {
+                some_variable,
+                some_variable2: SomeExpr::new(),
+            }
+        }};
+
+        AddFieldInStructConstruction {
+            path: &parse_squote!(a::b::Struct),
+            field_member: parse_squote!(added_field_member),
+            field_expr: parse_squote!(added_field_expr()),
+        }
+        .visit_block_mut(&mut block);
+
+        assert_eq!(
+            block,
+            parse_squote! {{
+                a::b::Struct {
+                    some_variable,
+                    some_variable2: SomeExpr::new(),
+                    added_field_member: added_field_expr()
+                }
+            }}
+        );
+    }
+
+    #[test]
+    fn add_field_in_struct_construction_generics() {
+        let mut block = parse_squote! {{
+            a::b::Struct {
+                some_variable,
+                some_variable2: T::default(),
+            }
+        }};
+
+        AddFieldInStructConstruction {
+            path: &parse_squote!(a::b::Struct<T>),
+            field_member: parse_squote!(added_field_member),
+            field_expr: parse_squote!(added_field_expr()),
+        }
+        .visit_block_mut(&mut block);
+
+        assert_eq!(
+            block,
+            parse_squote! {{
+                a::b::Struct {
+                    some_variable,
+                    some_variable2: T::default(),
+                    added_field_member: added_field_expr()
+                }
             }}
         );
     }
