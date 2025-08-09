@@ -447,7 +447,7 @@ mod tests {
     }
 
     #[test]
-    fn add_field_in_struct_construction_turbofish() {
+    fn add_field_in_struct_construction_generics_turbofish() {
         let mut block = parse_squote! {{
             Struct::<T, u64> {
                 x: T::default(),
@@ -456,7 +456,7 @@ mod tests {
         }};
 
         AddFieldInStructConstruction {
-            path: &parse_squote!(Struct),
+            path: &parse_squote!(Struct<T, U>),
             field_member: parse_squote!(added_field_member),
             field_expr: parse_squote!(added_field_expr()),
         }
