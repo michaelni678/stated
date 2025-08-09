@@ -323,7 +323,7 @@ mod tests {
     #[test]
     fn add_field_in_struct_construction_unnamed_single_segment() {
         let mut block = parse_squote! {{
-            Struct(some_variable, SomeExpr::new())
+            Struct(x, SomeExpr::new())
         }};
 
         AddFieldInStructConstruction {
@@ -336,7 +336,7 @@ mod tests {
         assert_eq!(
             block,
             parse_squote! {{
-                Struct(some_variable, SomeExpr::new(), added_field_expr())
+                Struct(x, SomeExpr::new(), added_field_expr())
             }}
         );
     }
@@ -344,7 +344,7 @@ mod tests {
     #[test]
     fn add_field_in_struct_construction_unnamed_multiple_segments() {
         let mut block = parse_squote! {{
-            a::b::Struct(some_variable, SomeExpr::new())
+            a::b::Struct(x, SomeExpr::new())
         }};
 
         AddFieldInStructConstruction {
@@ -357,7 +357,7 @@ mod tests {
         assert_eq!(
             block,
             parse_squote! {{
-                a::b::Struct(some_variable, SomeExpr::new(), added_field_expr())
+                a::b::Struct(x, SomeExpr::new(), added_field_expr())
             }}
         );
     }
@@ -366,8 +366,8 @@ mod tests {
     fn add_field_in_struct_construction_named_single_segment() {
         let mut block = parse_squote! {{
             Struct {
-                some_variable,
-                some_variable2: SomeExpr::new(),
+                x,
+                y: SomeExpr::new(),
             }
         }};
 
@@ -382,8 +382,8 @@ mod tests {
             block,
             parse_squote! {{
                 Struct {
-                    some_variable,
-                    some_variable2: SomeExpr::new(),
+                    x,
+                    y: SomeExpr::new(),
                     added_field_member: added_field_expr()
                 }
             }}
@@ -394,8 +394,8 @@ mod tests {
     fn add_field_in_struct_construction_named_multiple_segments() {
         let mut block = parse_squote! {{
             a::b::Struct {
-                some_variable,
-                some_variable2: SomeExpr::new(),
+                x,
+                y: SomeExpr::new(),
             }
         }};
 
@@ -410,8 +410,8 @@ mod tests {
             block,
             parse_squote! {{
                 a::b::Struct {
-                    some_variable,
-                    some_variable2: SomeExpr::new(),
+                    x,
+                    y: SomeExpr::new(),
                     added_field_member: added_field_expr()
                 }
             }}
@@ -422,8 +422,8 @@ mod tests {
     fn add_field_in_struct_construction_generics() {
         let mut block = parse_squote! {{
             a::b::Struct {
-                some_variable,
-                some_variable2: T::default(),
+                x,
+                y: T::default(),
             }
         }};
 
@@ -438,8 +438,36 @@ mod tests {
             block,
             parse_squote! {{
                 a::b::Struct {
-                    some_variable,
-                    some_variable2: T::default(),
+                    x,
+                    y: T::default(),
+                    added_field_member: added_field_expr()
+                }
+            }}
+        );
+    }
+
+    #[test]
+    fn add_field_in_struct_construction_turbofish() {
+        let mut block = parse_squote! {{
+            Struct::<T, u64> {
+                x: T::default(),
+                y: 0u64,
+            }
+        }};
+
+        AddFieldInStructConstruction {
+            path: &parse_squote!(Struct),
+            field_member: parse_squote!(added_field_member),
+            field_expr: parse_squote!(added_field_expr()),
+        }
+        .visit_block_mut(&mut block);
+
+        assert_eq!(
+            block,
+            parse_squote! {{
+                Struct::<T, u64> {
+                    x: T::default(),
+                    y: 0u64,
                     added_field_member: added_field_expr()
                 }
             }}
