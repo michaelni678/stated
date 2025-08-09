@@ -7,9 +7,9 @@ use syn::{
 
 use crate::utilities::squote::parse_squote;
 
-pub struct ReplaceInferInReturnType(pub Type);
+pub struct ReplaceTypeInfer(pub Type);
 
-impl VisitMut for ReplaceInferInReturnType {
+impl VisitMut for ReplaceTypeInfer {
     fn visit_type_mut(&mut self, ty: &mut Type) {
         let Type::Infer(_) = ty else {
             visit_type_mut(self, ty);
@@ -20,9 +20,9 @@ impl VisitMut for ReplaceInferInReturnType {
     }
 }
 
-pub struct ReplaceInferInBlock(pub Expr);
+pub struct ReplaceExprInfer(pub Expr);
 
-impl VisitMut for ReplaceInferInBlock {
+impl VisitMut for ReplaceExprInfer {
     fn visit_expr_mut(&mut self, expr: &mut Expr) {
         let Expr::Infer(_) = expr else {
             visit_expr_mut(self, expr);
@@ -33,13 +33,13 @@ impl VisitMut for ReplaceInferInBlock {
     }
 }
 
-pub struct AddFieldInStructConstructionInBlock<'a> {
+pub struct AddFieldInStructConstruction<'a> {
     pub path: &'a Path,
     pub field_member: Member,
     pub field_type: Type,
 }
 
-impl AddFieldInStructConstructionInBlock<'_> {
+impl AddFieldInStructConstruction<'_> {
     fn should_modify(&self, other: &Path) -> bool {
         self.path
             .segments
@@ -49,7 +49,7 @@ impl AddFieldInStructConstructionInBlock<'_> {
     }
 }
 
-impl VisitMut for AddFieldInStructConstructionInBlock<'_> {
+impl VisitMut for AddFieldInStructConstruction<'_> {
     fn visit_expr_mut(&mut self, expr: &mut Expr) {
         // Constructing a unit struct is considered a path expression. Since the
         // expression variant must be changed, capture it here.
@@ -107,7 +107,7 @@ mod tests {
     fn replace_infer_in_return_type_unnested() {
         let mut return_type = parse_squote!(-> _);
 
-        ReplaceInferInReturnType(parse_squote!(Dummy)).visit_return_type_mut(&mut return_type);
+        ReplaceTypeInfer(parse_squote!(Dummy)).visit_return_type_mut(&mut return_type);
 
         assert_eq!(return_type, parse_squote!(-> Dummy));
     }
@@ -116,7 +116,7 @@ mod tests {
     fn replace_infer_in_return_type_nested() {
         let mut return_type = parse_squote!(-> Returned<_>);
 
-        ReplaceInferInReturnType(parse_squote!(Dummy)).visit_return_type_mut(&mut return_type);
+        ReplaceTypeInfer(parse_squote!(Dummy)).visit_return_type_mut(&mut return_type);
 
         assert_eq!(return_type, parse_squote!(-> Returned<Dummy>));
     }
@@ -125,7 +125,7 @@ mod tests {
     fn replace_infer_in_return_type_nested_multiple() {
         let mut return_type = parse_squote!(-> Returned<_, (_, i64), Nest<_, String>>);
 
-        ReplaceInferInReturnType(parse_squote!(Dummy)).visit_return_type_mut(&mut return_type);
+        ReplaceTypeInfer(parse_squote!(Dummy)).visit_return_type_mut(&mut return_type);
 
         assert_eq!(
             return_type,
@@ -139,7 +139,7 @@ mod tests {
             _
         }};
 
-        ReplaceInferInBlock(parse_squote!(Dummy)).visit_block_mut(&mut block);
+        ReplaceExprInfer(parse_squote!(Dummy)).visit_block_mut(&mut block);
 
         assert_eq!(block, parse_squote! {{ Dummy }});
     }
@@ -150,7 +150,7 @@ mod tests {
             Ok(_)
         }};
 
-        ReplaceInferInBlock(parse_squote!(Dummy)).visit_block_mut(&mut block);
+        ReplaceExprInfer(parse_squote!(Dummy)).visit_block_mut(&mut block);
 
         assert_eq!(
             block,
@@ -167,7 +167,7 @@ mod tests {
             dummy
         }};
 
-        ReplaceInferInBlock(parse_squote!(Dummy)).visit_block_mut(&mut block);
+        ReplaceExprInfer(parse_squote!(Dummy)).visit_block_mut(&mut block);
 
         assert_eq!(
             block,
@@ -185,7 +185,7 @@ mod tests {
             dummy
         }};
 
-        ReplaceInferInBlock(parse_squote!(Dummy)).visit_block_mut(&mut block);
+        ReplaceExprInfer(parse_squote!(Dummy)).visit_block_mut(&mut block);
 
         assert_eq!(
             block,
@@ -208,7 +208,7 @@ mod tests {
             return Ok(_);
         }};
 
-        ReplaceInferInBlock(parse_squote!(Dummy)).visit_block_mut(&mut block);
+        ReplaceExprInfer(parse_squote!(Dummy)).visit_block_mut(&mut block);
 
         assert_eq!(
             block,

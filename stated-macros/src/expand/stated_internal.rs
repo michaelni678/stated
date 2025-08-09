@@ -22,7 +22,7 @@ use crate::{
         squote::{parse_squote, squote},
         stateset::Stateset,
         visit::{
-            AddFieldInStructConstructionInBlock, ReplaceInferInBlock, ReplaceInferInReturnType,
+            AddFieldInStructConstruction, ReplaceExprInfer, ReplaceTypeInfer,
         },
     },
 };
@@ -347,7 +347,7 @@ pub fn expand_item_impl_internal(
                 let mut pretty_associated_fn = associated_fn.clone();
 
                 // Replace `_` in the return type with the designated parameter's ident.
-                ReplaceInferInReturnType(parse_squote!(#designated_param_ident))
+                ReplaceTypeInfer(parse_squote!(#designated_param_ident))
                     .visit_return_type_mut(&mut pretty_associated_fn.sig.output);
                 pretty_associated_fn.block = parse_squote!({ unreachable!() });
 
@@ -400,10 +400,10 @@ pub fn expand_item_impl_internal(
                 });
 
                 // Replace the designated argument with the outgoing type.
-                ReplaceInferInReturnType(parse_squote!((#(#states_out_ty),*)))
+                ReplaceTypeInfer(parse_squote!((#(#states_out_ty),*)))
                     .visit_return_type_mut(&mut associated_fn.sig.output);
 
-                ReplaceInferInBlock(parse_squote!(@receiver_span=> self.__reconstruct()))
+                ReplaceExprInfer(parse_squote!(@receiver_span=> self.__reconstruct()))
                     .visit_block_mut(&mut associated_fn.block);
             } else {
                 // Replace the designated argument with the stateless type.
@@ -432,11 +432,11 @@ pub fn expand_item_impl_internal(
                 });
 
                 // Replace `_` in the return type with the states-out type.
-                ReplaceInferInReturnType(parse_squote!((#(#states_out_ty),*)))
+                ReplaceTypeInfer(parse_squote!((#(#states_out_ty),*)))
                     .visit_return_type_mut(&mut associated_fn.sig.output);
             }
 
-            AddFieldInStructConstructionInBlock {
+            AddFieldInStructConstruction {
                 path: &item_impl_path.path,
                 field_member: parse_squote!(__states),
                 field_type: parse_squote!(::std::marker::PhantomData),
