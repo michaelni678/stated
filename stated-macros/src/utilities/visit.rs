@@ -33,21 +33,19 @@ impl VisitMut for ReplaceInferInBlock {
     }
 }
 
-pub struct ModifyStructConstructionInBlock<'a>(pub &'a Path);
+pub struct AddPhantomFieldInStructConstructionInBlock<'a>(pub &'a Path);
 
-impl ModifyStructConstructionInBlock<'_> {
-    pub fn should_modify(&self, other: &Path) -> bool {
-        let other_idents = other.segments.iter().map(|seg| &seg.ident);
-
+impl AddPhantomFieldInStructConstructionInBlock<'_> {
+    fn should_modify(&self, other: &Path) -> bool {
         self.0
             .segments
             .iter()
             .map(|seg| &seg.ident)
-            .eq(other_idents)
+            .eq(other.segments.iter().map(|seg| &seg.ident))
     }
 }
 
-impl VisitMut for ModifyStructConstructionInBlock<'_> {
+impl VisitMut for AddPhantomFieldInStructConstructionInBlock<'_> {
     fn visit_expr_mut(&mut self, expr: &mut Expr) {
         // Constructing a unit struct is considered a path expression. Since the
         // expression variant must be changed, capture it here.
@@ -133,7 +131,9 @@ mod tests {
 
     #[test]
     fn replace_infer_in_block_end_unnested() {
-        let mut block = parse_squote! {{ _ }};
+        let mut block = parse_squote! {{
+            _
+        }};
 
         ReplaceInferInBlock(parse_squote!(Dummy)).visit_block_mut(&mut block);
 
@@ -142,11 +142,18 @@ mod tests {
 
     #[test]
     fn replace_infer_in_block_end_nested() {
-        let mut block = parse_squote! {{ Ok(_) }};
+        let mut block = parse_squote! {{
+            Ok(_)
+        }};
 
         ReplaceInferInBlock(parse_squote!(Dummy)).visit_block_mut(&mut block);
 
-        assert_eq!(block, parse_squote! {{ Ok(Dummy) }});
+        assert_eq!(
+            block,
+            parse_squote! {{
+                Ok(Dummy)
+            }}
+        );
     }
 
     #[test]

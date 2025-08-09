@@ -21,7 +21,10 @@ use crate::{
         documentation::{Description, DescriptionLine, Documentation},
         squote::{parse_squote, squote},
         stateset::Stateset,
-        visit::{ModifyStructConstructionInBlock, ReplaceInferInBlock, ReplaceInferInReturnType},
+        visit::{
+            AddPhantomFieldInStructConstructionInBlock, ReplaceInferInBlock,
+            ReplaceInferInReturnType,
+        },
     },
 };
 
@@ -434,7 +437,7 @@ pub fn expand_item_impl_internal(
                     .visit_return_type_mut(&mut associated_fn.sig.output);
             }
 
-            ModifyStructConstructionInBlock(&item_impl_path.path)
+            AddPhantomFieldInStructConstructionInBlock(&item_impl_path.path)
                 .visit_block_mut(&mut associated_fn.block);
 
             item_impl.items.push(impl_item);
