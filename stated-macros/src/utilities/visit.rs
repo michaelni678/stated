@@ -323,7 +323,7 @@ mod tests {
     #[test]
     fn add_field_in_struct_construction_unnamed_single_segment() {
         let mut block = parse_squote! {{
-            Struct(x, SomeExpr::new())
+            Struct(x, some_other_expr())
         }};
 
         AddFieldInStructConstruction {
@@ -336,7 +336,7 @@ mod tests {
         assert_eq!(
             block,
             parse_squote! {{
-                Struct(x, SomeExpr::new(), added_field_expr())
+                Struct(x, some_other_expr(), added_field_expr())
             }}
         );
     }
@@ -344,7 +344,7 @@ mod tests {
     #[test]
     fn add_field_in_struct_construction_unnamed_multiple_segments() {
         let mut block = parse_squote! {{
-            a::b::Struct(x, SomeExpr::new())
+            a::b::Struct(x, some_other_expr())
         }};
 
         AddFieldInStructConstruction {
@@ -357,7 +357,7 @@ mod tests {
         assert_eq!(
             block,
             parse_squote! {{
-                a::b::Struct(x, SomeExpr::new(), added_field_expr())
+                a::b::Struct(x, some_other_expr(), added_field_expr())
             }}
         );
     }
@@ -367,7 +367,7 @@ mod tests {
         let mut block = parse_squote! {{
             Struct {
                 x,
-                y: SomeExpr::new(),
+                y: some_other_expr(),
             }
         }};
 
@@ -383,7 +383,7 @@ mod tests {
             parse_squote! {{
                 Struct {
                     x,
-                    y: SomeExpr::new(),
+                    y: some_other_expr(),
                     added_field_member: added_field_expr()
                 }
             }}
@@ -395,7 +395,7 @@ mod tests {
         let mut block = parse_squote! {{
             a::b::Struct {
                 x,
-                y: SomeExpr::new(),
+                y: some_other_expr(),
             }
         }};
 
@@ -411,7 +411,7 @@ mod tests {
             parse_squote! {{
                 a::b::Struct {
                     x,
-                    y: SomeExpr::new(),
+                    y: some_other_expr(),
                     added_field_member: added_field_expr()
                 }
             }}
