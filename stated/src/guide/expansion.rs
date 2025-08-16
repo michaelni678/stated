@@ -51,6 +51,12 @@
 //! }
 //! ```
 //!
+//! ### Limitation
+//!
+//! Outside of Stated associated functions, you'll need to [set the phantom
+//! field yourself when instantiating](super::limitations#instantiating-outside)
+//! the struct.
+//!
 //! ## Reconstruct Method
 //!
 //! A private method is added to assist with transitioning states. This
