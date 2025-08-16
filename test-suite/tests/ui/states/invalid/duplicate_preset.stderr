@@ -1,5 +1,5 @@
 error: state is already preset
- --> tests/ui/states/duplicate_preset.rs:3:31
+ --> tests/ui/states/invalid/duplicate_preset.rs:3:31
   |
 3 | #[stated(states(A), preset(A, A))]
   |                               ^

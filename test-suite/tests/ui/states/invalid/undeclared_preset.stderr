@@ -1,5 +1,5 @@
 error: preset state is not a declared state
- --> tests/ui/states/undeclared_preset.rs:3:28
+ --> tests/ui/states/invalid/undeclared_preset.rs:3:28
   |
 3 | #[stated(states(A), preset(B))]
   |                            ^
