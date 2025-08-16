@@ -297,7 +297,7 @@ pub fn expand_item_impl_internal(
                 // stabilized. Tracking issue: https://github.com/rust-lang/rust/issues/54140.
                 return Err(Error::new(
                     state.span(),
-                    "assigned state doesn't need to be asserted",
+                    "asserted state doesn't need to be assigned",
                 ));
             }
 
@@ -310,7 +310,7 @@ pub fn expand_item_impl_internal(
                 // stabilized. Tracking issue: https://github.com/rust-lang/rust/issues/54140.
                 return Err(Error::new(
                     state.span(),
-                    "deleted state doesn't need to be rejected",
+                    "rejected state doesn't need to be deleted",
                 ));
             }
 
