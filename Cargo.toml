@@ -5,6 +5,7 @@ members = [
     "stated-macros",
 
     "examples",
+    "test-suite",
 ]
 
 [workspace.dependencies]

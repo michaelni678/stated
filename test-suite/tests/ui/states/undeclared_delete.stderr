@@ -1,0 +1,5 @@
+error: deleted state is not declared
+ --> tests/ui/states/undeclared_delete.rs:8:21
+  |
+8 |     #[stated(delete(B))]
+  |                     ^

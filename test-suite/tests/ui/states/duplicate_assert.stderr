@@ -1,0 +1,5 @@
+error: state is already asserted
+ --> tests/ui/states/duplicate_assert.rs:8:24
+  |
+8 |     #[stated(assert(A, A))]
+  |                        ^
