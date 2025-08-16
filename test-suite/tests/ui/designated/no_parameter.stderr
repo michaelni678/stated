@@ -1,11 +1,11 @@
-error: missing a designated parameter
- --> tests/ui/designated/no_parameter.rs:4:1
+error: expected a designated parameter
+ --> tests/ui/designated/no_parameter.rs:4:5
   |
 4 | pub struct Test;
-  | ^^^^^^^^^^^^^^^^
+  |     ^^^^^^
 
-error: missing a designated parameter
+error: expected a designated parameter
  --> tests/ui/designated/no_parameter.rs:7:1
   |
 7 | impl Test {}
-  | ^^^^^^^^^^^^
+  | ^^^^

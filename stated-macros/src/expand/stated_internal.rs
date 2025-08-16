@@ -57,8 +57,8 @@ pub fn expand_item_struct_internal(
     // Validate there are parameters, since one must be designated.
     if item_struct.generics.params.is_empty() {
         return Err(Error::new(
-            item_struct.span(),
-            "missing a designated parameter",
+            item_struct.struct_token.span(),
+            "expected a designated parameter",
         ));
     }
 
@@ -166,8 +166,8 @@ pub fn expand_item_impl_internal(
     // Validate there are parameters, since one must be designated.
     if item_impl.generics.params.is_empty() {
         return Err(Error::new(
-            item_impl.span(),
-            "missing a designated parameter",
+            item_impl.impl_token.span(),
+            "expected a designated parameter",
         ));
     }
 
@@ -184,10 +184,6 @@ pub fn expand_item_impl_internal(
     // Normally, validating the designated argument is done while expanding
     // implementation items. If there are no impl items in the impl block, the
     // designated argument should still be validated. That is done here.
-    //
-    // NOTE: There is a UI test for when there are no implementation items
-    // (test-suite/tests/ui/designated/no_argument_itemless.rs) and when there are
-    // items (test-suite/tests/ui/designated/no_argument.rs).
     if item_impl.items.is_empty() {
         let args = item_impl
             .self_ty
