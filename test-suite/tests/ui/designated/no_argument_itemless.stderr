@@ -1,0 +1,5 @@
+error: an argument must match the designated parameter
+ --> tests/ui/designated/no_argument_itemless.rs:7:1
+  |
+7 | impl<#[stated] S> Test<> {}
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^

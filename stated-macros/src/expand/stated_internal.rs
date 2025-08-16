@@ -181,6 +181,34 @@ pub fn expand_item_impl_internal(
     // Remove the designating attribute from the designated parameter.
     designated_param.attrs.remove(designating_attr_index);
 
+    // Normally, validating the designated argument is done while expanding
+    // implementation items. If there are no impl items in the impl block, the
+    // designated argument should still be validated. That is done here.
+    //
+    // NOTE: There is a UI test for when there are no implementation items
+    // (test-suite/tests/ui/designated/no_argument_itemless.rs) and when there are
+    // items (test-suite/tests/ui/designated/no_argument.rs).
+    if item_impl.items.is_empty() {
+        let args = &item_impl
+            .self_ty
+            .require_path()?
+            .last()?
+            .arguments
+            .require_angle_bracketed()?
+            .args;
+
+        // Catches `<>`, which is empty but still considered angle-bracketed.
+        if args.is_empty() {
+            return Err(Error::new(
+                item_impl.span(),
+                "an argument must match the designated parameter",
+            ));
+        }
+
+        // Validate the argument. Throw away the return value.
+        find_designated_arg(args, &designated_param_ident)?;
+    }
+
     let impl_items = mem::take(&mut item_impl.items);
 
     // Rename the variable for clarity. This will act as a template when needed. It
@@ -355,6 +383,7 @@ pub fn expand_item_impl_internal(
                 .require_angle_bracketed_mut()?
                 .args;
 
+            // Catches `<>`, which is empty but still considered angle-bracketed.
             if args.is_empty() {
                 return Err(Error::new(
                     item_impl.span(),

@@ -1,0 +1,5 @@
+error: no argument matches the designated parameter
+ --> tests/ui/designated/missing_argument.rs:9:27
+  |
+9 | impl<#[stated] S, T> Test<T> {}
+  |                           ^
