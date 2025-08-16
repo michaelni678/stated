@@ -54,6 +54,14 @@ pub fn expand_item_struct_internal(
         );
     }
 
+    // Validate there are parameters, since one must be designated.
+    if item_struct.generics.params.is_empty() {
+        return Err(Error::new(
+            item_struct.span(),
+            "missing a designated parameter",
+        ));
+    }
+
     let (designated_param_index, designating_attr_index) =
         get_designated_indices(&item_struct.generics.params)?;
     let designated_param =
@@ -152,6 +160,14 @@ pub fn expand_item_impl_internal(
         return Err(Error::new(
             state.span(),
             "preset state is not a declared state",
+        ));
+    }
+
+    // Validate there are parameters, since one must be designated.
+    if item_impl.generics.params.is_empty() {
+        return Err(Error::new(
+            item_impl.span(),
+            "missing a designated parameter",
         ));
     }
 
@@ -338,6 +354,13 @@ pub fn expand_item_impl_internal(
                 .arguments
                 .require_angle_bracketed_mut()?
                 .args;
+
+            if args.is_empty() {
+                return Err(Error::new(
+                    item_impl.span(),
+                    "an argument must match the designated parameter",
+                ));
+            }
 
             let designated_arg_index = find_designated_arg(args, &designated_param_ident)?;
 
