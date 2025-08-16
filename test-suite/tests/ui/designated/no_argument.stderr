@@ -1,5 +1,5 @@
 error: an argument must match the designated parameter
- --> tests/ui/designated/no_argument.rs:7:23
+ --> tests/ui/designated/no_argument.rs:8:23
   |
-7 | impl<#[stated] S> Test<> {
+8 | impl<#[stated] S> Test<> {
   |                       ^
