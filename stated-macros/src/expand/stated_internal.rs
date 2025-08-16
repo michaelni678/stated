@@ -189,24 +189,23 @@ pub fn expand_item_impl_internal(
     // (test-suite/tests/ui/designated/no_argument_itemless.rs) and when there are
     // items (test-suite/tests/ui/designated/no_argument.rs).
     if item_impl.items.is_empty() {
-        let args = &item_impl
+        let args = item_impl
             .self_ty
             .require_path()?
             .last()?
             .arguments
-            .require_angle_bracketed()?
-            .args;
+            .require_angle_bracketed()?;
 
         // Catches `<>`, which is empty but still considered angle-bracketed.
-        if args.is_empty() {
+        if args.args.is_empty() {
             return Err(Error::new(
-                item_impl.span(),
+                args.lt_token.span(),
                 "an argument must match the designated parameter",
             ));
         }
 
         // Validate the argument. Throw away the return value.
-        find_designated_arg(args, &designated_param_ident)?;
+        find_designated_arg(&args.args, &designated_param_ident)?;
     }
 
     let impl_items = mem::take(&mut item_impl.items);
@@ -377,20 +376,20 @@ pub fn expand_item_impl_internal(
 
             let item_impl_path = item_impl.self_ty.require_path_mut()?;
 
-            let args = &mut item_impl_path
+            let args = item_impl_path
                 .last_mut()?
                 .arguments
-                .require_angle_bracketed_mut()?
-                .args;
+                .require_angle_bracketed_mut()?;
 
             // Catches `<>`, which is empty but still considered angle-bracketed.
-            if args.is_empty() {
+            if args.args.is_empty() {
                 return Err(Error::new(
-                    item_impl.span(),
+                    args.lt_token.span(),
                     "an argument must match the designated parameter",
                 ));
             }
 
+            let args = &mut args.args;
             let designated_arg_index = find_designated_arg(args, &designated_param_ident)?;
 
             if !documentation.ugly {
