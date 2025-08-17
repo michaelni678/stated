@@ -5,11 +5,7 @@ use stated::stated;
 pub struct Test<#[stated] #[stated] S>;
 
 #[stated]
-impl<
-    #[stated]
-    #[stated] S,
-> Test<S>
-{
-}
+#[rustfmt::skip] // Stops the attributes from going on different lines.
+impl<#[stated] #[stated] S> Test<S> {}
 
 fn main() {}

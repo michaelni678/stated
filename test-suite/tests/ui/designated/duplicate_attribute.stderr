@@ -5,7 +5,7 @@ error: parameter is already designated
   |                           ^^^^^^^^^
 
 error: parameter is already designated
-  --> tests/ui/designated/duplicate_attribute.rs:10:5
-   |
-10 |     #[stated] S,
-   |     ^^^^^^^^^
+ --> tests/ui/designated/duplicate_attribute.rs:9:16
+  |
+9 | impl<#[stated] #[stated] S> Test<S> {}
+  |                ^^^^^^^^^
