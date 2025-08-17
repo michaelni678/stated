@@ -1,11 +1,11 @@
 error: no parameter is designated
- --> tests/ui/designated/missing_attribute.rs:4:17
+ --> tests/ui/designated/missing_designated_parameter.rs:4:17
   |
 4 | pub struct Test<S>;
   |                 ^
 
 error: no parameter is designated
- --> tests/ui/designated/missing_attribute.rs:7:6
+ --> tests/ui/designated/missing_designated_parameter.rs:7:6
   |
 7 | impl<S> Test<S> {}
   |      ^

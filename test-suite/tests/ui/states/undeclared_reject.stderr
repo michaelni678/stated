@@ -1,5 +1,5 @@
 error: rejected state is not declared
- --> tests/ui/states/invalid/undeclared_reject.rs:8:21
+ --> tests/ui/states/undeclared_reject.rs:8:21
   |
 8 |     #[stated(reject(B))]
   |                     ^

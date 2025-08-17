@@ -1,5 +1,5 @@
 error: state is already declared
- --> tests/ui/states/invalid/redundant_declare.rs:3:20
+ --> tests/ui/states/redundant_declare.rs:3:20
   |
 3 | #[stated(states(A, A))]
   |                    ^

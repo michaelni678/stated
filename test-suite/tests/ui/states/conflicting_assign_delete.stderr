@@ -1,5 +1,5 @@
 error: deleted state cannot also be assigned
- --> tests/ui/states/invalid/conflicting_assign_delete.rs:8:32
+ --> tests/ui/states/conflicting_assign_delete.rs:8:32
   |
 8 |     #[stated(assign(A), delete(A))]
   |                                ^

@@ -1,5 +1,5 @@
 error[E0599]: no method named `foo` found for struct `Test<N>` in the current scope
-  --> tests/ui/states/unsatisfied.rs:18:17
+  --> tests/ui/states/unsatisfied_ruleset.rs:18:17
    |
  4 | pub struct Test<#[stated] S>;
    | ---------------------------- method `foo` not found for this struct
