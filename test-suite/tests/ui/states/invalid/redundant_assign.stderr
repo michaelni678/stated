@@ -1,5 +1,5 @@
 error: state is already assigned
- --> tests/ui/states/invalid/duplicate_assign.rs:8:24
+ --> tests/ui/states/invalid/redundant_assign.rs:8:24
   |
 8 |     #[stated(assign(A, A))]
   |                        ^

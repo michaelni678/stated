@@ -1,8 +1,8 @@
-error: state is already declared
- --> tests/ui/states/invalid/duplicate_declare.rs:3:20
+error: state is already preset
+ --> tests/ui/states/invalid/redundant_preset.rs:3:31
   |
-3 | #[stated(states(A, A))]
-  |                    ^
+3 | #[stated(states(A), preset(A, A))]
+  |                               ^
 ...
 6 | #[stated]
   | --------- in this attribute macro expansion

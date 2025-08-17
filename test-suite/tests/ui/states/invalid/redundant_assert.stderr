@@ -1,5 +1,5 @@
 error: state is already asserted
- --> tests/ui/states/invalid/duplicate_assert.rs:8:24
+ --> tests/ui/states/invalid/redundant_assert.rs:8:24
   |
 8 |     #[stated(assert(A, A))]
   |                        ^
