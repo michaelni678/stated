@@ -1,0 +1,8 @@
+[package]
+name = "test-suite"
+edition = "2024"
+publish = false
+
+[dev-dependencies]
+stated = { workspace = true }
+trybuild = "1.0"

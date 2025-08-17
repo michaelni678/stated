@@ -54,6 +54,14 @@ pub fn expand_item_struct_internal(
         );
     }
 
+    // Validate there are parameters, since one must be designated.
+    if item_struct.generics.params.is_empty() {
+        return Err(Error::new(
+            item_struct.struct_token.span(),
+            "expected a designated parameter",
+        ));
+    }
+
     let (designated_param_index, designating_attr_index) =
         get_designated_indices(&item_struct.generics.params)?;
     let designated_param =
@@ -155,6 +163,14 @@ pub fn expand_item_impl_internal(
         ));
     }
 
+    // Validate there are parameters, since one must be designated.
+    if item_impl.generics.params.is_empty() {
+        return Err(Error::new(
+            item_impl.impl_token.span(),
+            "expected a designated parameter",
+        ));
+    }
+
     // Get the designated indices.
     let (designated_param_index, designating_attr_index) =
         get_designated_indices(&item_impl.generics.params)?;
@@ -164,6 +180,29 @@ pub fn expand_item_impl_internal(
 
     // Remove the designating attribute from the designated parameter.
     designated_param.attrs.remove(designating_attr_index);
+
+    // Normally, validating the designated argument is done while expanding
+    // implementation items. If there are no impl items in the impl block, the
+    // designated argument should still be validated. That is done here.
+    if item_impl.items.is_empty() {
+        let args = item_impl
+            .self_ty
+            .require_path()?
+            .last()?
+            .arguments
+            .require_angle_bracketed()?;
+
+        // Catches `<>`, which is empty but still considered angle-bracketed.
+        if args.args.is_empty() {
+            return Err(Error::new(
+                args.lt_token.span(),
+                "an argument must match the designated parameter",
+            ));
+        }
+
+        // Validate the argument. Throw away the return value.
+        find_designated_arg(&args.args, &designated_param_ident)?;
+    }
 
     let impl_items = mem::take(&mut item_impl.items);
 
@@ -297,7 +336,7 @@ pub fn expand_item_impl_internal(
                 // stabilized. Tracking issue: https://github.com/rust-lang/rust/issues/54140.
                 return Err(Error::new(
                     state.span(),
-                    "assigned state doesn't need to be asserted",
+                    "asserted state doesn't need to be assigned",
                 ));
             }
 
@@ -310,7 +349,7 @@ pub fn expand_item_impl_internal(
                 // stabilized. Tracking issue: https://github.com/rust-lang/rust/issues/54140.
                 return Err(Error::new(
                     state.span(),
-                    "deleted state doesn't need to be rejected",
+                    "rejected state doesn't need to be deleted",
                 ));
             }
 
@@ -333,12 +372,20 @@ pub fn expand_item_impl_internal(
 
             let item_impl_path = item_impl.self_ty.require_path_mut()?;
 
-            let args = &mut item_impl_path
+            let args = item_impl_path
                 .last_mut()?
                 .arguments
-                .require_angle_bracketed_mut()?
-                .args;
+                .require_angle_bracketed_mut()?;
 
+            // Catches `<>`, which is empty but still considered angle-bracketed.
+            if args.args.is_empty() {
+                return Err(Error::new(
+                    args.lt_token.span(),
+                    "an argument must match the designated parameter",
+                ));
+            }
+
+            let args = &mut args.args;
             let designated_arg_index = find_designated_arg(args, &designated_param_ident)?;
 
             if !documentation.ugly {

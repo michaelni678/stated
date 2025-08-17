@@ -1,0 +1,10 @@
+error: state is already preset
+ --> tests/ui/states/redundant_preset.rs:3:31
+  |
+3 | #[stated(states(A), preset(A, A))]
+  |                               ^
+...
+6 | #[stated]
+  | --------- in this attribute macro expansion
+  |
+  = note: this error originates in the macro `Test` which comes from the expansion of the attribute macro `stated` (in Nightly builds, run with -Z macro-backtrace for more info)
