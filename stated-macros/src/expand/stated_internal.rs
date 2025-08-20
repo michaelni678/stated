@@ -451,6 +451,16 @@ pub fn expand_item_impl_internal(
                 ReplaceExprInfer(parse_squote!(@receiver_span=> self.__reconstruct()))
                     .visit_block_mut(&mut associated_fn.block);
             } else {
+                if let Some(state) = ruleset["assert"]
+                    .first()
+                    .or_else(|| ruleset["reject"].first())
+                {
+                    return Err(Error::new(
+                        state.span(),
+                        "only methods can assert or reject states",
+                    ));
+                }
+
                 // Replace the designated argument with the stateless type.
                 args[designated_arg_index] = parse_squote!(::stated::__);
 
@@ -464,10 +474,6 @@ pub fn expand_item_impl_internal(
                     if ruleset["assign"].contains(state) {
                         parse_squote!(::stated::Y)
                     } else if ruleset["delete"].contains(state) {
-                        parse_squote!(::stated::N)
-                    } else if ruleset["assert"].contains(state) {
-                        parse_squote!(::stated::Y)
-                    } else if ruleset["reject"].contains(state) {
                         parse_squote!(::stated::N)
                     } else if stateset["preset"].contains(state) {
                         parse_squote!(::stated::Y)
