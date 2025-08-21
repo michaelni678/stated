@@ -1,0 +1,11 @@
+error[E0599]: no method named `foo` found for struct `Test<(Y, N, Y)>` in the current scope
+  --> tests/fail/states/method_reject.rs:18:17
+   |
+ 4 | pub struct Test<#[stated] S>;
+   | ---------------------------- method `foo` not found for this struct
+...
+18 |     Test::new().foo();
+   |                 ^^^ method not found in `Test<(Y, N, Y)>`
+   |
+   = note: the method was found for
+           - `Test<(N, B, N)>`
