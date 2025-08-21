@@ -1,0 +1,11 @@
+error: expected a struct or impl
+ --> tests/fail/ui/input/unsupported_item.rs:4:1
+  |
+4 | pub enum Test<#[stated] S> {}
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: cannot find macro `Test` in this scope
+ --> tests/fail/ui/input/unsupported_item.rs:7:19
+  |
+7 | impl<#[stated] S> Test<S> {}
+  |                   ^^^^

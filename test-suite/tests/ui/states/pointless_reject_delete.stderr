@@ -1,5 +1,0 @@
-error: rejected state doesn't need to be deleted
- --> tests/ui/states/pointless_reject_delete.rs:8:32
-  |
-8 |     #[stated(reject(A), delete(A))]
-  |                                ^

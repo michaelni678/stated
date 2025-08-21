@@ -1,0 +1,11 @@
+error: parameter is already designated
+ --> tests/fail/ui/designated/redundant_designating_attribute.rs:5:27
+  |
+5 | pub struct Test<#[stated] #[stated] S>;
+  |                           ^^^^^^^^^
+
+error: parameter is already designated
+ --> tests/fail/ui/designated/redundant_designating_attribute.rs:9:16
+  |
+9 | impl<#[stated] #[stated] S> Test<S> {}
+  |                ^^^^^^^^^

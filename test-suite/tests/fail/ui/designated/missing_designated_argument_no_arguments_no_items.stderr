@@ -1,0 +1,5 @@
+error: an argument must match the designated parameter
+ --> tests/fail/ui/designated/missing_designated_argument_no_arguments_no_items.rs:8:23
+  |
+8 | impl<#[stated] S> Test<> {}
+  |                       ^

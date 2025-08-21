@@ -1,0 +1,5 @@
+error: state is already deleted
+ --> tests/fail/ui/states/redundant_delete.rs:8:24
+  |
+8 |     #[stated(delete(A, A))]
+  |                        ^

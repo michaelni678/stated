@@ -1,5 +1,0 @@
-error: rejected state cannot also be asserted
- --> tests/ui/states/conflicting_assert_reject.rs:8:32
-  |
-8 |     #[stated(assert(A), reject(A))]
-  |                                ^
