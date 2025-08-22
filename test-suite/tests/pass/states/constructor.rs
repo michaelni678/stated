@@ -1,4 +1,4 @@
-use stated::{N, stated};
+use stated::{stated, N};
 
 #[stated(states(A, B, C))]
 pub struct Test<#[stated] S>;
