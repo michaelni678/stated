@@ -1,0 +1,5 @@
+error: only methods can assert or reject states
+ --> tests/fail/ui/states/not_method_reject.rs:8:21
+  |
+8 |     #[stated(reject(A))]
+  |                     ^

@@ -1,5 +1,0 @@
-error: invalid attribute
- --> tests/ui/input/invalid_ruleset_attribute.rs:8:25
-  |
-8 |     #[stated(assert(A), unsupported)]
-  |                         ^^^^^^^^^^^

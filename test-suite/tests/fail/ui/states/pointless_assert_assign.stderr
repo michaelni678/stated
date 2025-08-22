@@ -1,0 +1,5 @@
+error: asserted state doesn't need to be assigned
+ --> tests/fail/ui/states/pointless_assert_assign.rs:8:32
+  |
+8 |     #[stated(assert(A), assign(A))]
+  |                                ^

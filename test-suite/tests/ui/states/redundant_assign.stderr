@@ -1,5 +1,0 @@
-error: state is already assigned
- --> tests/ui/states/redundant_assign.rs:8:24
-  |
-8 |     #[stated(assign(A, A))]
-  |                        ^

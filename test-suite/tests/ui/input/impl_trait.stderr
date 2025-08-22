@@ -1,5 +1,0 @@
-error: trait impls are not supported
- --> tests/ui/input/impl_trait.rs:9:19
-  |
-9 | impl<#[stated] S> MyTrait for Test<S> {}
-  |                   ^^^^^^^

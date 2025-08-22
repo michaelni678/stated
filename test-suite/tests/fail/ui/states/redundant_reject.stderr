@@ -1,0 +1,5 @@
+error: state is already rejected
+ --> tests/fail/ui/states/redundant_reject.rs:8:24
+  |
+8 |     #[stated(reject(A, A))]
+  |                        ^

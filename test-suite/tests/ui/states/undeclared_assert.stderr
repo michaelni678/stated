@@ -1,5 +1,0 @@
-error: asserted state is not declared
- --> tests/ui/states/undeclared_assert.rs:8:21
-  |
-8 |     #[stated(assert(B))]
-  |                     ^

@@ -1,0 +1,10 @@
+error: preset state is not a declared state
+ --> tests/fail/ui/states/undeclared_preset.rs:3:28
+  |
+3 | #[stated(states(A), preset(B))]
+  |                            ^
+...
+6 | #[stated]
+  | --------- in this attribute macro expansion
+  |
+  = note: this error originates in the macro `Test` which comes from the expansion of the attribute macro `stated` (in Nightly builds, run with -Z macro-backtrace for more info)

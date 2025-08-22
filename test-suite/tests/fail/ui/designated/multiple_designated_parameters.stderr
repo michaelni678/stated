@@ -1,0 +1,11 @@
+error: cannot designate more than one parameter
+ --> tests/fail/ui/designated/multiple_designated_parameters.rs:4:30
+  |
+4 | pub struct Test<#[stated] S, #[stated] T>;
+  |                              ^^^^^^^^^^^
+
+error: cannot designate more than one parameter
+ --> tests/fail/ui/designated/multiple_designated_parameters.rs:7:19
+  |
+7 | impl<#[stated] S, #[stated] T> Test<S, T> {}
+  |                   ^^^^^^^^^^^
