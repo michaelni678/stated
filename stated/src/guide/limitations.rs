@@ -39,12 +39,14 @@
 //! `main`, which isn't a Stated associated function.
 //!
 //! ```
+//! # {} /*
 //! fn main() {
 //!     let example = Example {
 //!         x: 42,
 //!         __states: PhantomData, // Explicitly set the field yourself.
 //!     };
 //! }
+//! # */
 //! ```
 //!
 //! To get around this limitation, instantiate the struct in constructor
